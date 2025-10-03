@@ -18,7 +18,7 @@ class BaseClient:
             client_name=self.__class__.__name__, base_url=config.base_url
         )
 
-    async def _handle_request(self, method: str, url: str, **kwargs) -> dict:
+    async def _handle_request(self, method: str, url: str, **kwargs) -> tuple[int, dict]:
         """Logika internal untuk mengeksekusi permintaan dan menangani kesalahan."""
 
         self.log.debug(f"HTTP {method} {url} {kwargs}")
@@ -26,7 +26,7 @@ class BaseClient:
         try:
             response = await getattr(self.client, method.lower())(url, **kwargs)
             response.raise_for_status()
-            return response.json()
+            return response.status_code, response.json()
 
         except httpx.HTTPStatusError as exc:
             self.log.error(
@@ -52,10 +52,10 @@ class BaseClient:
                 cause=exc,
             ) from exc
 
-    async def cst_get(self, url: str, **kwargs) -> dict:
+    async def cst_get(self, url: str, **kwargs) -> tuple[int, dict]:
         """GET dengan logging + error handling standar."""
         return await self._handle_request("GET", url, **kwargs)
 
-    async def cst_post(self, url: str, **kwargs) -> dict:
+    async def cst_post(self, url: str, **kwargs) -> tuple[int, dict]:
         """POST dengan logging + error handling standar."""
         return await self._handle_request("POST", url, **kwargs)

@@ -4,6 +4,7 @@ import httpx
 from src.config.cfg_api_clients import DigiposConfig
 from src.core.clients.base import BaseClient
 from src.custom.exceptions import AuthenticationError, HttpResponseError
+from src.schemas.sch_digipos import RequestBalance
 
 
 class DigiposApiClient(BaseClient):
@@ -13,17 +14,25 @@ class DigiposApiClient(BaseClient):
         super().__init__(client, config)
         self.config: DigiposConfig = config
 
-    async def get_balance(self) -> dict:
-        """Mengambil saldo dengan kredensial dari config."""
+    async def get_balance(self, request_data: RequestBalance) -> dict:
+        if request_data.username != self.config.username:
+            self.log.warning(
+                f"Username mismatch: Request='{request_data.username}' Config='{self.config.username}'"
+            )
+            raise AuthenticationError(
+                message="Username provided does not match configured credentials.",
+                context={"request_username": request_data.username},
+            )
+
         payload = {
-            "username": self.config.username,
+            "username": request_data.username,
         }
 
         # Menggunakan logger yang sudah terikat
-        self.log.info(f"Mengecek saldo untuk user: {self.config.username}")
+        self.log.info(f"Mengecek saldo untuk user: {request_data.username}")
 
         try:
-            response_data = await self.cst_get(url="/balance", params=payload)
+            _status_code, response_data = await self.cst_get(url="/balance", params=payload)
             return response_data
         except HttpResponseError as exc:
             # Contoh penanganan error spesifik dari Digipos
