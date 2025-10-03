@@ -1,22 +1,28 @@
-"""dependencies."""
-
+# src/dependencies.py
 from typing import Annotated
 
 from fastapi import Depends, Request
-from httpx import AsyncClient
 
+from src.config.cfg_api_clients import DigiposConfig
 from src.config.settings import AppSettings
+from src.core.clients.digipos import DigiposApiClient
 
 
-async def get_appsettings(request: Request):
+async def get_appsettings(request: Request) -> AppSettings:
     return request.app.state.settings
 
 
-DepAppSettings = Annotated[AppSettings, Depends(get_appsettings)]
+async def get_digipos_config(
+    settings: AppSettings = Depends(get_appsettings),
+) -> DigiposConfig:
+    return settings.digipos
 
 
-async def get_digipos_client(request: Request):
-    return request.app.state.client_digipos
+async def get_digipos_api_client(
+    request: Request, config: DigiposConfig = Depends(get_digipos_config)
+) -> DigiposApiClient:
+    httpx_client = request.app.state.client_digipos
+    return DigiposApiClient(client=httpx_client, config=config)
 
 
-DepDigiposClient = Annotated[AsyncClient, Depends(get_digipos_client)]
+DepDigiposClient = Annotated[DigiposApiClient, Depends(get_digipos_api_client)]

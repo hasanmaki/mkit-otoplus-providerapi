@@ -1,4 +1,3 @@
-# exceptions.py
 from typing import Any
 
 from fastapi import Request
@@ -7,7 +6,7 @@ from loguru import logger
 
 
 class AppExceptionError(Exception):
-    """Base exception for all clients."""
+    """Base exception untuk semua klien dan aplikasi."""
 
     default_message: str = "An application error occurred."
     status_code: int = 400
@@ -18,7 +17,7 @@ class AppExceptionError(Exception):
         message: str | None = None,
         context: dict[str, Any] | None = None,
         cause: Exception | None = None,
-        status_code: int | None = None,  # optional override
+        status_code: int | None = None,
     ):
         self.message = message or self.default_message
         self.context = context or {}
@@ -28,34 +27,36 @@ class AppExceptionError(Exception):
         super().__init__(self.message)
 
     def to_dict(self) -> dict[str, Any]:
-        """JSON-friendly representation."""
+        """Representasi yang ramah JSON."""
         data: dict[str, Any] = {
             "error": self.__class__.__name__,
             "message": self.message,
         }
         if self.context:
             data["context"] = self.context.copy()
-        if self.__cause__:
-            data["cause"] = str(self.__cause__)
         return data
 
 
-# register
-async def global_exception_handler(request: Request, exc: AppExceptionError):  # noqa: RUF029
-    """Dynamic response handler for AppExceptionError.
+# Handler Pengecualian Global
+async def global_exception_handler(request: Request, exc: AppExceptionError):
+    """Handler dinamis untuk AppExceptionError (mendukung JSON dan TEXT)."""
 
-    - Default: JSON
-    - Plain text: if header X-Response-Format=text or query param format=text
-    """
+    # --- 1. Logging Terpusat ---
     log_context = {
         "path": str(request.url.path),
         "method": request.method,
-        "client": request.client.host if request.client else None,
-        "status_code": exc.status_code,
-        "context": exc.context,
-        "cause": str(exc.__cause__) if exc.__cause__ else None,
+        "client_ip": request.client.host if request.client else None,
+        "status_code_resp": exc.status_code,
+        "error_context": exc.context,
     }
-    logger.bind(**log_context).error(exc.message)
+
+    if exc.__cause__:
+        logger.bind(**log_context).error(
+            f"{exc.message} | Caused by: {exc.__cause__}", exception=exc.__cause__
+        )
+    else:
+        logger.bind(**log_context).error(exc.message)
+
     response_format = request.headers.get(
         "X-Response-Format"
     ) or request.query_params.get("format", "json")
@@ -63,31 +64,28 @@ async def global_exception_handler(request: Request, exc: AppExceptionError):  #
     if response_format.lower() == "text":
         text = f"[{exc.__class__.__name__}] {exc.message}"
         if exc.context:
-            text += f" | context={exc.context}"
-        if exc.__cause__:
-            text += f" | cause={exc.__cause__}"
+            text += f" | Context: {exc.context}"
         return PlainTextResponse(text, status_code=exc.status_code)
 
     return JSONResponse(content=exc.to_dict(), status_code=exc.status_code)
 
 
 class HttpResponseError(AppExceptionError):
-    """Exception raised for HTTP response errors."""
+    """Pengecualian yang dimunculkan untuk kode status HTTP 4xx/5xx."""
 
     default_message: str = "Error response from external service."
-    status_code: int = 502
+    status_code: int = 502  # Bad Gateway / Pihak ketiga memberikan error
 
 
-# buat custom exception seterus nya ke bawah
 class HTTPConnectionError(AppExceptionError):
-    """Exception raised for HTTP connection errors."""
+    """Pengecualian yang dimunculkan untuk kesalahan koneksi/timeout."""
 
     default_message: str = "Service unavailable: Failed to connect to external service."
-    status_code: int = 503
+    status_code: int = 503  # Service Unavailable
 
 
-class HTTPGenricError(AppExceptionError):
-    """Generic HTTP exception."""
+class AuthenticationError(AppExceptionError):
+    """Pengecualian untuk kegagalan otentikasi."""
 
-    default_message: str = "An unexpected HTTP error occurred."
-    status_code: int = 500
+    default_message: str = "Authentication required or invalid credentials."
+    status_code: int = 401

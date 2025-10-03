@@ -5,6 +5,7 @@ from fastapi import FastAPI
 from httpx import AsyncClient
 from loguru import logger
 
+from src.api import register_api_v1
 from src.config.cfg_logging import setup_logging
 from src.config.settings import get_settings
 from src.custom.exceptions import AppExceptionError, global_exception_handler
@@ -37,8 +38,11 @@ app = FastAPI(lifespan=lifespan)
 # register middleware
 app.add_middleware(LoggingMiddleware)
 
-# regisrer exception
+# register exception
 app.add_exception_handler(AppExceptionError, global_exception_handler)  # type: ignore
+
+# register routers
+register_api_v1(app)
 
 
 @app.get("/")
