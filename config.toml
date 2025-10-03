@@ -1,0 +1,10 @@
+[digipos]
+# base url
+base_url = "http://10.0.0.3:10003/"
+
+# credentials
+username = "yourusername"
+password = "yourpassword"
+pin = "yourpin"
+
+# for isimple use #[isimple]

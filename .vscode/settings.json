@@ -1,0 +1,83 @@
+{
+    // file explorer settings
+    "files.exclude": {
+        "**/.git": true,
+        "**/.svn": true,
+        "**/.hg": true,
+        "**/.DS_Store": true,
+        "**/Thumbs.db": true,
+        "**/node_modules": true,
+        "**/*.egg-info": true,
+        "**/__pycache__": true,
+        "**/.ruff_cache": true,
+        "**/.pytest_cache": true,
+    },
+    // error lens settings
+    "errorLens.enabled": true,
+    "errorLens.gutterIconsEnabled": false,
+    "errorLens.codeLensEnabled": false,
+    // formatter linter settings
+    "editor.formatOnSave": true,
+    "editor.defaultFormatter": "charliermarsh.ruff",
+    "[python]": {
+        "editor.defaultFormatter": "charliermarsh.ruff"
+    },
+    "editor.codeActionsOnSave": {
+        "source.organizeImports.ruff": "explicit",
+        "source.fixAll.ruff": "explicit",
+        "source.convertImportFormat": "explicit",
+        "source.fixAll": "explicit",
+    },
+    "editor.formatOnPaste": false,
+    // pylance settings
+    // "python.analysis.exclude": [
+    //     "**/migrations",
+    //     "**/tests",
+    //     "**/venv",
+    //     "**/.venv",
+    //     "**/.env",
+    //     "**/.vscode",
+    //     "**/node_modules",
+    //     "**/__pycache__",
+    //     "**/*.egg-info",
+    //     "**/dist",
+    //     "**/*.pyi",
+    //     "**/alembic",
+    //     "${python.envPath}/Lib/",
+    //     "workspaceFolder/Lib/",
+    //     "**/Lib/",
+    //     "**/lib/"
+    // ],
+    // todos
+    "todo-tree.filtering.excludedWorkspaces": [
+        "**/migrations",
+        "**/tests",
+        "**/venv",
+        "**/.venv",
+        "**/.env",
+        "**/.vscode",
+        "**/node_modules",
+        "**/__pycache__",
+        "**/*.egg-info",
+        "**/dist",
+        "**/*.pyi"
+    ],
+    // sonarlint setup
+    "sonarlint.analysisExcludesStandalone": "**/.venv/**,**/lib/**,*.pyi,**/node_modules/**,**/migrations/**,**/tests/**,**/__pycache__/**,**/.ruff_cache/**,**/.pytest_cache/**,**/dist/**,**/*.egg-info/**,**/tests/conftest.py",
+    "python.testing.pytestEnabled": true,
+    "python.terminal.shellIntegration.enabled": true,
+    "sqlite.databaseExtensions": [
+        "db",
+        "db3",
+        "sdb",
+        "s3db",
+        "sqlite",
+        "sqlite3"
+    ],
+    "sqlite.setupDatabase": {
+        "default": {
+            "file": "workspaceFolder/application.db",
+            "name": "Default Database"
+        }
+    },
+}
