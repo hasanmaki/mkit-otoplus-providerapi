@@ -1,3 +1,4 @@
+import logging
 from contextlib import asynccontextmanager
 
 import uvicorn
@@ -11,6 +12,8 @@ from src.config.settings import get_settings
 from src.custom.exceptions import AppExceptionError, global_exception_handler
 from src.custom.middlewares import LoggingMiddleware
 
+logging.getLogger("httpcore").setLevel(logging.WARNING)
+logging.getLogger("httpx").setLevel(logging.INFO)
 setup_logging()
 
 settings = get_settings("config.toml")
