@@ -3,9 +3,12 @@
 base_url = "http://10.0.0.3:10003/"
 
 # credentials
-#username = "WIR6289504"
-username = "WIR6289504123"
+username = "WIR6289504"
 password = "yourpassword"
 pin = "yourpin"
 
+[digipos.endpoints]
+balance = "balance"
+history = "history"
+inquiry = "inquiry"
 # for isimple use #[isimple]

@@ -14,7 +14,14 @@ class ApiBaseConfig(BaseModel):
     http2: bool = Field(default=False)
 
 
+class DigiposEndpoints(BaseModel):
+    balance: str
+    history: str
+    inquiry: str
+
+
 class DigiposConfig(ApiBaseConfig):
     username: str
     password: str
     pin: str
+    endpoints: DigiposEndpoints

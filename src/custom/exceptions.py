@@ -89,3 +89,10 @@ class AuthenticationError(AppExceptionError):
 
     default_message: str = "Authentication required or invalid credentials."
     status_code: int = 401
+
+
+class ApiCredentialsError(AuthenticationError):
+    """Pengecualian untuk kredensial API yang tidak valid atau hilang."""
+
+    default_message: str = "Invalid or missing API credentials."
+    status_code: int = 401

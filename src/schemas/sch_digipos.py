@@ -5,8 +5,12 @@ from pydantic import BaseModel
 from src.schemas.sch_base import ApiResponseGeneric
 
 
-class RequestBalance(BaseModel):
+class DGUsername(BaseModel):
     username: str
+
+
+class RequestBalance(DGUsername):
+    pass
 
 
 class BalanceData(BaseModel):
