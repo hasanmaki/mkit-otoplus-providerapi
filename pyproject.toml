@@ -1,0 +1,7 @@
+[project]
+name = "mkit-otoplus-providerapi"
+version = "0.1.0"
+description = "wrapper untuk provider api dari otoplus developer"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = []
