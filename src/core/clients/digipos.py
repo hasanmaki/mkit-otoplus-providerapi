@@ -2,6 +2,7 @@ import httpx
 
 from src.config.cfg_api_clients import DigiposConfig
 from src.core.clients.base import BaseClient
+from src.core.clients.utils import build_url
 from src.custom.exceptions import AuthenticationError
 from src.schemas.sch_digipos import RequestBalance, ResponseBalance
 
@@ -13,7 +14,7 @@ class DigiposApiClient(BaseClient):
         super().__init__(client, config)
         self.config = config
 
-    def validate_username(self, username: str) -> None:
+    def _validate_username(self, username: str) -> None:
         if username != self.config.username:
             raise AuthenticationError(
                 message="Username provided does not match configured credentials.",
@@ -21,9 +22,10 @@ class DigiposApiClient(BaseClient):
             )
 
     async def get_balance(self, request_data: RequestBalance) -> ResponseBalance:
-        self.validate_username(request_data.username)
+        self._validate_username(request_data.username)
         self.log.info(f"Mengecek saldo untuk user: {request_data.username}")
+        url = url = build_url(self.config.base_url, self.config.endpoints.balance)
         resp = await self.cst_get(
-            f"{self.config.base_url}balance", params=request_data.model_dump()
+            url, params=request_data.model_dump(exclude_none=True)
         )
         return ResponseBalance(**resp)
