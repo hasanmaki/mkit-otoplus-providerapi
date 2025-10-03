@@ -1,9 +1,10 @@
-# src/api_clients/base.py
+from typing import Any, Dict
 
 import httpx
 from loguru import logger
 
 from src.config.cfg_api_clients import ApiBaseConfig
+from src.core.clients.response_utils import normalized_response
 from src.custom.exceptions import HTTPConnectionError, HttpResponseError
 
 
@@ -13,20 +14,16 @@ class BaseClient:
     def __init__(self, client: httpx.AsyncClient, config: ApiBaseConfig):
         self.client = client
         self.config = config
-
         self.log = logger.bind(
             client_name=self.__class__.__name__, base_url=config.base_url
         )
 
-    async def _handle_request(self, method: str, url: str, **kwargs) -> tuple[int, dict]:
-        """Logika internal untuk mengeksekusi permintaan dan menangani kesalahan."""
-
+    async def _handle_request(self, method: str, url: str, **kwargs) -> Dict[str, Any]:
         self.log.debug(f"HTTP {method} {url} {kwargs}")
-
         try:
             response = await getattr(self.client, method.lower())(url, **kwargs)
             response.raise_for_status()
-            return response.status_code, response.json()
+            return normalized_response(response)
 
         except httpx.HTTPStatusError as exc:
             self.log.error(
@@ -52,10 +49,8 @@ class BaseClient:
                 cause=exc,
             ) from exc
 
-    async def cst_get(self, url: str, **kwargs) -> tuple[int, dict]:
-        """GET dengan logging + error handling standar."""
+    async def cst_get(self, url: str, **kwargs) -> Dict[str, Any]:
         return await self._handle_request("GET", url, **kwargs)
 
-    async def cst_post(self, url: str, **kwargs) -> tuple[int, dict]:
-        """POST dengan logging + error handling standar."""
+    async def cst_post(self, url: str, **kwargs) -> Dict[str, Any]:
         return await self._handle_request("POST", url, **kwargs)
