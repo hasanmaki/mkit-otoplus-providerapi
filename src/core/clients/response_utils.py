@@ -1,12 +1,16 @@
 # src/core/clients/response_utils.py
 import json
-from typing import Any
+from typing import Any, Type, TypeVar
 
 import httpx
 from fastapi.responses import PlainTextResponse
+from loguru import logger
+from pydantic import ValidationError
 
 from src.config.settings import AppSettings
 from src.custom.exceptions import HttpResponseError
+
+T = TypeVar("T")
 
 
 def _parse_response_body(response: httpx.Response) -> Any:
@@ -58,6 +62,7 @@ def normalized_response(response: httpx.Response) -> dict[str, Any]:
     meta = _get_meta_info(response)
 
     if not data:
+        logger.warning(f"Empty response body from {response.request.url}")
         raise HttpResponseError(
             message="Provider returned empty response body",
             context={
@@ -95,7 +100,7 @@ def to_text_response_simple(obj: Any) -> str:
             v = json.dumps(v, separators=(",", ":"))
         elif isinstance(v, dict):
             # flatten meta dict
-            for sub_k, sub_v in v.items():
+            for sub_k, sub_v in (v or {}).items():
                 parts.append(f"{k}.{sub_k}={sub_v}")
             continue
         parts.append(f"{k}={v}")
@@ -113,3 +118,14 @@ def respond(obj: Any, settings: AppSettings) -> Any:
     if response_type == "text":
         return PlainTextResponse(to_text_response_simple(obj))
     return obj
+
+
+def safe_convert(model: Type[T], data: Any) -> T | dict:
+    try:
+        return model(**data)
+    except ValidationError as e:
+        logger.error(
+            f"[safe_convert] Failed to parse {model.__name__}: {e.errors() if hasattr(e, 'errors') else e}"
+        )
+        logger.debug(f"[safe_convert] Raw data: {data}")
+        return data

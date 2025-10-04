@@ -8,7 +8,8 @@ password = "yourpassword"
 pin = "yourpin"
 
 [digipos.response]
-type = "text" # accept onyl "json" or "text"
+# accept onyl "json" or "text"
+type = "text"
 
 [digipos.endpoints]
 login = "add_account"

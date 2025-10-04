@@ -12,3 +12,5 @@ class ApiResponseGeneric[T](BaseModel):
     content_length: int | None
     meta: dict[str, Any]
     data: T
+
+    model_config = {"extra": "allow"}
