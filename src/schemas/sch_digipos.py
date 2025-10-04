@@ -1,5 +1,7 @@
 """schmeas for digipos."""
 
+from typing import Any
+
 from pydantic import BaseModel
 
 from src.schemas.sch_base import ApiResponseGeneric
@@ -20,4 +22,17 @@ class BalanceData(BaseModel):
 
 
 class ResponseBalance(ApiResponseGeneric[BalanceData]):
+    pass
+
+
+# login
+class RequestLogin(DGUsername):
+    password: str
+
+
+class LoginData(BaseModel):
+    data: Any
+
+
+class ResponseLogin(ApiResponseGeneric[LoginData]):
     pass

@@ -17,4 +17,5 @@ async def get_balance(
 
     `make sure account sudah di setup di config`
     """
-    return await digipos_client.get_balance(params)
+    response_balance = await digipos_client.get_balance(params)
+    return response_balance
