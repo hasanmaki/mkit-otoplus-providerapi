@@ -15,9 +15,15 @@ class ApiBaseConfig(BaseModel):
 
 
 class DigiposEndpoints(BaseModel):
+    login: str
+    verify_otp: str
     balance: str
-    history: str
-    inquiry: str
+    profile: str
+    list_va: str
+    logout: str
+    reward: str
+    banner: str
+    sim_status: str
 
 
 class DigiposConfig(ApiBaseConfig):

@@ -8,7 +8,12 @@ password = "yourpassword"
 pin = "yourpin"
 
 [digipos.endpoints]
+login = "add_account"
+verify_otp = "add_account_otp"
 balance = "balance"
-history = "history"
-inquiry = "inquiry"
-# for isimple use #[isimple]
+profile = "profile"
+list_va = "list_va"
+logout = "logout"
+reward = "reward_summary"
+banner= "banner"
+sim_status ="sim_status"

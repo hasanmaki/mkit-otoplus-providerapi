@@ -53,4 +53,4 @@ class BaseClient:
         return await self._handle_request("GET", url, **kwargs)
 
     async def cst_post(self, url: str, **kwargs) -> Dict[str, Any]:
-        return await self._handle_request("POST", url, **kwargs)
+        raise NotImplementedError

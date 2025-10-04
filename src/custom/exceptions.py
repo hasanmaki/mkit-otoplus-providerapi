@@ -96,3 +96,10 @@ class ApiCredentialsError(AuthenticationError):
 
     default_message: str = "Invalid or missing API credentials."
     status_code: int = 401
+
+
+class ExternalAPIError(HttpResponseError):
+    """Pengecualian untuk kesalahan yang diterima dari API eksternal."""
+
+    default_message: str = "External API returned an error."
+    status_code: int = 502
