@@ -43,3 +43,8 @@ class DigiposConfig(ApiBaseConfig):
     pin: str
     response: APiBaseResponse
     endpoints: DigiposEndpoints
+
+
+class IsimpleConfig(ApiBaseConfig):
+    msisdn: str
+    pin: str

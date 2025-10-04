@@ -15,9 +15,10 @@ class AppSettings(BaseSettings):
     """application settings merged from here."""
 
     digipos: DigiposConfig
+    # isimple: IsimpleConfig
 
     model_config = SettingsConfigDict(
-        toml_file="",
+        toml_file="config.toml",
         extra="forbid",
         validate_assignment=True,
         from_attributes=True,
@@ -36,12 +37,12 @@ class AppSettings(BaseSettings):
 
 
 @lru_cache
-def get_settings(toml_file_path: str | None) -> AppSettings:
-    """Get application settings with caching, without mutating global config."""
-    try:
-        if not toml_file_path:
-            raise ValueError("TOML file path must be provided")
-    except Exception as e:
-        raise RuntimeError(f"Error obtaining TOML file path: {e}")
-    AppSettings.model_config["toml_file"] = toml_file_path
+def get_settings() -> AppSettings:
+    return AppSettings()  # type: ignore
+
+
+# buat overide if we need misal testing
+def load_test_settings(path: str) -> AppSettings:
+    """For testing — load without caching."""
+    AppSettings.model_config["toml_file"] = path
     return AppSettings()  # type: ignore

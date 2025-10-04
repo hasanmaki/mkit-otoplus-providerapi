@@ -16,7 +16,7 @@ logging.getLogger("httpcore").setLevel(logging.WARNING)
 logging.getLogger("httpx").setLevel(logging.INFO)
 setup_logging()
 
-settings = get_settings("config.toml")
+settings = get_settings()
 
 
 # lifespan
