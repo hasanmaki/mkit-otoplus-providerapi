@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, HttpUrl, field_validator
 
 default_headers = {
     "User-Agent": "MKIT-Trimmer-API/1.0",
@@ -8,7 +8,7 @@ default_headers = {
 
 
 class ApiBaseConfig(BaseModel):
-    base_url: str
+    base_url: HttpUrl
     headers: dict[str, str] = Field(default_headers)
     timeout: int = 10
     http2: bool = Field(default=False)

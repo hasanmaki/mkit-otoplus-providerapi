@@ -3,12 +3,12 @@ from contextlib import asynccontextmanager
 
 import uvicorn
 from fastapi import FastAPI
-from httpx import AsyncClient
 from loguru import logger
 
 from src.api import register_api_v1
 from src.config.cfg_logging import setup_logging
 from src.config.settings import get_settings
+from src.core.clients.manager import ApiClientManager
 from src.custom.exceptions import AppExceptionError, global_exception_handler
 from src.custom.middlewares import LoggingMiddleware
 
@@ -23,16 +23,13 @@ settings = get_settings()
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     logger.debug("Application startup")
+    client_manager = ApiClientManager()
     app.state.settings = settings
-    app.state.client_digipos = AsyncClient(
-        base_url=settings.digipos.base_url,
-        headers=settings.digipos.headers,
-        timeout=settings.digipos.timeout,
-        http2=settings.digipos.http2,
-    )
+    app.state.api_manager = client_manager
+    await client_manager.start()
     logger.bind(settings=settings).debug("Settings loaded")
     yield
-    await app.state.client_digipos.aclose()
+    await client_manager.stop()
     logger.debug("Application shutdown")
 
 

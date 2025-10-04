@@ -5,10 +5,15 @@ settings ini akan di store pada app state.settings untuk di akses pada seluruh b
 
 # ruff: noqa
 from functools import lru_cache
+from pathlib import Path
 
 
 from src.config.cfg_api_clients import DigiposConfig
 from pydantic_settings import BaseSettings, SettingsConfigDict, TomlConfigSettingsSource
+
+BASE_DIR = Path(__file__).resolve().parents[2]
+CONFIG_FILE = "config.toml"
+CONFIG_PATH = BASE_DIR / CONFIG_FILE
 
 
 class AppSettings(BaseSettings):
@@ -18,7 +23,7 @@ class AppSettings(BaseSettings):
     # isimple: IsimpleConfig
 
     model_config = SettingsConfigDict(
-        toml_file="config.toml",
+        toml_file=CONFIG_PATH,
         extra="forbid",
         validate_assignment=True,
         from_attributes=True,
@@ -38,6 +43,10 @@ class AppSettings(BaseSettings):
 
 @lru_cache
 def get_settings() -> AppSettings:
+    # check file first
+    if not CONFIG_PATH.exists():
+        raise FileNotFoundError(f"Config file not found: {CONFIG_PATH}")
+
     return AppSettings()  # type: ignore
 
 

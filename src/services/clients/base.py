@@ -4,11 +4,10 @@ import httpx
 from loguru import logger
 
 from src.config.cfg_api_clients import ApiBaseConfig
-from src.core.clients.response_utils import normalized_response
 from src.custom.exceptions import HTTPConnectionError, HttpResponseError
 
 
-class BaseClient:
+class BaseApiClient:
     """Base class untuk mengelola klien HTTP eksternal."""
 
     def __init__(self, client: httpx.AsyncClient, config: ApiBaseConfig):
@@ -23,8 +22,6 @@ class BaseClient:
         try:
             response = await getattr(self.client, method.lower())(url, **kwargs)
             response.raise_for_status()
-            return normalized_response(response)
-
         except httpx.HTTPStatusError as exc:
             self.log.error(
                 f"Response Error: {exc.response.status_code}",
@@ -48,6 +45,7 @@ class BaseClient:
                 context={"url": str(exc.request.url) if exc.request else url},
                 cause=exc,
             ) from exc
+        return response.json()
 
     async def cst_get(self, url: str, **kwargs) -> Dict[str, Any]:
         return await self._handle_request("GET", url, **kwargs)
