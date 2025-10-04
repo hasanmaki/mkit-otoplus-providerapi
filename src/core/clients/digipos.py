@@ -4,7 +4,12 @@ from src.config.cfg_api_clients import DigiposConfig
 from src.core.clients.base import BaseClient
 from src.core.clients.utils import build_url
 from src.custom.exceptions import AuthenticationError, ExternalAPIError
-from src.schemas.sch_digipos import RequestBalance, ResponseBalance
+from src.schemas.sch_digipos import (
+    RequestBalance,
+    RequestLogin,
+    ResponseBalance,
+    ResponseLogin,
+)
 
 
 class DigiposApiClient(BaseClient):
@@ -33,3 +38,16 @@ class DigiposApiClient(BaseClient):
         except httpx.HTTPError as e:
             self.log.error(f"Error calling Digipos API: {e}")
             raise ExternalAPIError(f"Failed to retrieve balance: {e}") from e
+
+    async def get_login(self, request_data: RequestLogin) -> ResponseLogin:
+        self._validate_username(request_data.username)
+        self.log.info(f"Mengecek login untuk user: {request_data.username}")
+        url = build_url(self.config.base_url, self.config.endpoints.login)
+        try:
+            resp = await self.cst_get(
+                url, params=request_data.model_dump(exclude_none=True)
+            )
+            return ResponseLogin(**resp)
+        except httpx.HTTPError as e:
+            self.log.error(f"Error calling Digipos API: {e}")
+            raise ExternalAPIError(f"Failed to retrieve login status: {e}") from e

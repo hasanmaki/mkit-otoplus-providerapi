@@ -18,6 +18,9 @@ async def get_digipos_config(
     return settings.digipos
 
 
+DepDigiposSettings = Annotated[AppSettings, Depends(get_appsettings)]
+
+
 async def get_digipos_api_client(
     request: Request, config: DigiposConfig = Depends(get_digipos_config)
 ) -> DigiposApiClient:

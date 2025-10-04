@@ -7,6 +7,9 @@ username = "WIR6289504"
 password = "yourpassword"
 pin = "yourpin"
 
+[digipos.response]
+type = "text" # accept onyl "json" or "text"
+
 [digipos.endpoints]
 login = "add_account"
 verify_otp = "add_account_otp"
