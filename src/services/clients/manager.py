@@ -1,43 +1,103 @@
-"""Pendekatan sederhana dan friendly untuk mengatur AsyncClient."""
-
+# src/core/clients/manager.py
 from typing import Dict
 
 import httpx
+from httpx_retries import Retry, RetryTransport
 from loguru import logger
 
 from src.config.settings import get_settings
 
 
 class ApiClientManager:
-    def __init__(self):
+    """
+    Centralized manager untuk semua Async HTTP Client (reusable & global).
+    - Handle retry, limit, keepalive, dan lifecycle client
+    """
+
+    def __init__(self) -> None:
         self._clients: Dict[str, httpx.AsyncClient] = {}
         self.log = logger.bind(context="ApiClientManager")
         self.settings = get_settings()
 
-    async def start(self):
-        """Init semua HTTP client (reusable di seluruh app)."""
+    async def start(self) -> None:
+        """Inisialisasi semua client global di startup."""
         self.log.info("Initializing HTTP clients...")
 
+        # --- build retry strategy ---
+        retry = Retry(
+            total=5,
+            backoff_factor=0.5,  # exponential delay
+            status_forcelist=[429, 500, 502, 503, 504],
+            allowed_methods=["GET", "POST"],
+        )
+
+        transport = RetryTransport(retry=retry)
+
+        # --- build connection limits ---
+        limits = httpx.Limits(
+            max_keepalive_connections=100,
+            max_connections=100,
+            keepalive_expiry=300,  # 5 menit
+        )
+
+        # --- register digipos client (default) ---
         digipos_cfg = self.settings.digipos
-        self._clients["digipos"] = httpx.AsyncClient(
+
+        await self.register_client(
+            name="digipos",
             base_url=str(digipos_cfg.base_url),
             headers=digipos_cfg.headers,
             timeout=digipos_cfg.timeout,
             http2=digipos_cfg.http2,
+            transport=transport,
+            limits=limits,
         )
 
-        self.log.debug(f"Registered clients: {list(self._clients.keys())}")
+        self.log.success(f"Registered clients: {list(self._clients.keys())}")
 
-    async def stop(self):
-        """Close semua clients saat app shutdown."""
+    async def register_client(
+        self,
+        name: str,
+        base_url: str,
+        headers: dict,
+        timeout: float | int,
+        http2: bool = False,
+        *,
+        transport: httpx.AsyncBaseTransport | None = None,
+        limits: httpx.Limits | None = None,
+    ) -> None:
+        """Register 1 client baru dengan konfigurasi lengkap."""
+        if name in self._clients:
+            self.log.warning(f"Client '{name}' sudah terdaftar — dilewati.")
+            return
+
+        client = httpx.AsyncClient(
+            transport=transport,
+            base_url=base_url,
+            headers=headers,
+            timeout=timeout,
+            http2=http2,
+            limits=limits,  # type: ignore
+        )
+
+        self._clients[name] = client
+        self.log.debug(
+            f"HTTP client '{name}' initialized | "
+            f"base_url={base_url} | retry={getattr(transport, 'retry', None)} | "
+            f"max_conn={limits.max_connections if limits else 'default'}"
+        )
+
+    async def stop(self) -> None:
+        """Tutup semua koneksi saat app shutdown."""
         self.log.info("Closing HTTP clients...")
         for client in self._clients.values():
             await client.aclose()
         self._clients.clear()
+        self.log.success("All HTTP clients closed successfully.")
 
     def get_client(self, name: str) -> httpx.AsyncClient:
         """Ambil client berdasarkan nama provider."""
         if name not in self._clients:
-            self.log.error(f"Client {name} belum diinisialisasi")
-            raise ValueError(f"Client {name} belum diinisialisasi")
+            self.log.error(f"Client '{name}' belum diinisialisasi")
+            raise ValueError(f"Client '{name}' belum diinisialisasi")
         return self._clients[name]
