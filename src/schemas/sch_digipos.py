@@ -4,7 +4,7 @@ from typing import Any
 
 from pydantic import BaseModel
 
-from src.schemas.sch_base import ApiResponseGeneric
+from src.schemas.base_response import ApiResponseGeneric
 
 
 class DGUsername(BaseModel):

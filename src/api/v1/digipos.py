@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends
 from fastapi.responses import PlainTextResponse
 
 from src.deps import ServiceDigiposAccount, get_digipos_account_service
-from src.schemas.sch_base import ApiResponse
+from src.schemas.base_response import ApiResponse
 
 router = APIRouter(prefix="/digipos", tags=["digipos"])
 

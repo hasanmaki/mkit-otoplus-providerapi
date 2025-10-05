@@ -3,8 +3,8 @@
 import httpx
 
 from src.config.settings import DigiposConfig
-from src.schemas.sch_base import ApiResponse
-from src.services.clients.base import BaseApiClient
+from src.schemas.base_response import ApiResponse
+from src.services.clients.base_client import BaseApiClient
 from src.services.utils.response_utils import response_as_dict
 
 

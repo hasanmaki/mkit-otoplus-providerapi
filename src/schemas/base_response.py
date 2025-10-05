@@ -6,7 +6,10 @@ T = TypeVar("T")
 
 
 class ApiResponseGeneric[T](BaseModel):
-    """base schemas untuk semua response dari api yang sudah di standardisasi."""
+    """base schemas untuk semua response dari api yang sudah di standardisasi.
+
+    next kita akan bermain dsini biar enak.
+    """
 
     status_code: int
     meta: dict[str, Any] | None
@@ -16,6 +19,10 @@ class ApiResponseGeneric[T](BaseModel):
 
 
 class ApiResponse(BaseModel):
+    """api response standard pertama.
+
+    nanti refactor kalo calm"""
+
     status_code_target: int
     meta: dict[str, Any] | None
     data: Any
