@@ -36,16 +36,14 @@ def _get_meta_info(response: httpx.Response) -> Dict[str, Any] | None:
 
     # tambahan info opsional
     meta["content_type"] = response.headers.get("Content-Type")
-    meta["content_length"] = response.headers.get("Content-Length")
     meta["elapsed_ms"] = response.elapsed.total_seconds() * 1000
     meta["host"] = response.request.url.host
-    meta["path"] = response.request.url.path
     meta["method"] = response.request.method
 
     return meta or None
 
 
-def response_as_dict(response: httpx.Response) -> Dict[str, Any]:
+def response_upstream_to_dict(response: httpx.Response) -> Dict[str, Any]:
     """
     Normalisasi response dari API target.
     Output standar:
@@ -74,20 +72,3 @@ def response_as_dict(response: httpx.Response) -> Dict[str, Any]:
         "meta": meta,
         "data": data,
     }
-
-
-def model_to_text(model: Any) -> str:
-    """
-    Serialize Pydantic model ke text-friendly format:
-    api_status_code=&meta=&data=
-    - meta tetap dict
-    - data tetap dict / list
-    Bisa dipakai semua model Pydantic yang memiliki atribut:
-    api_status_code, meta, data
-    """
-    fields = model.model_dump()
-    return (
-        f"api_status_code={fields.get('api_status_code', '')}#"
-        f"meta={fields.get('meta', {})}#"
-        f"data={fields.get('data', {})}"
-    )
