@@ -6,7 +6,7 @@ from httpx import AsyncClient
 from src.config.cfg_api_clients import DigiposConfig
 from src.config.settings import AppSettings
 from src.services.clients.manager import ApiClientManager
-from src.services.digipos.srv_digipos import ServiceDigipos
+from src.services.digipos.srv_digipos_account import ServiceDigiposAccount
 
 
 async def get_appsettings(request: Request) -> AppSettings:
@@ -43,8 +43,8 @@ async def get_digipos_client(
 DepDigiposApiClient = Annotated[AsyncClient, Depends(get_digipos_client)]
 
 
-async def get_digipos_service(
+async def get_digipos_account_service(
     digipos_client: DepDigiposApiClient,
     digipos_settings: DepDigiposSettings,
-) -> ServiceDigipos:
-    return ServiceDigipos(client=digipos_client, config=digipos_settings)
+) -> ServiceDigiposAccount:
+    return ServiceDigiposAccount(client=digipos_client, config=digipos_settings)

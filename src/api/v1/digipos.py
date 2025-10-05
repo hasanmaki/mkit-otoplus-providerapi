@@ -3,7 +3,7 @@
 from fastapi import APIRouter, Depends
 from fastapi.responses import PlainTextResponse
 
-from src.deps import ServiceDigipos, get_digipos_service
+from src.deps import ServiceDigiposAccount, get_digipos_account_service
 from src.schemas.sch_base import ApiResponse
 
 router = APIRouter(prefix="/digipos", tags=["digipos"])
@@ -15,7 +15,7 @@ router = APIRouter(prefix="/digipos", tags=["digipos"])
     response_model=ApiResponse,
     response_class=PlainTextResponse,
 )
-async def login(service: ServiceDigipos = Depends(get_digipos_service)):
+async def login(service: ServiceDigiposAccount = Depends(get_digipos_account_service)):
     """Login ulang ke account Digipos API."""
     response_model = await service.get_login()
     return PlainTextResponse(content=response_model.model_dump_json())
@@ -28,7 +28,7 @@ async def login(service: ServiceDigipos = Depends(get_digipos_service)):
     response_class=PlainTextResponse,
 )
 async def verify_otp(
-    service: ServiceDigipos = Depends(get_digipos_service), otp: str = ""
+    service: ServiceDigiposAccount = Depends(get_digipos_account_service), otp: str = ""
 ):
     """Verify OTP untuk login ulang ke Digipos API."""
     response_model = await service.get_verify_otp(otp)
@@ -41,7 +41,9 @@ async def verify_otp(
     response_model=ApiResponse,
     response_class=PlainTextResponse,
 )
-async def balance(service: ServiceDigipos = Depends(get_digipos_service)):
+async def balance(
+    service: ServiceDigiposAccount = Depends(get_digipos_account_service),
+):
     """Ambil balance dari Digipos API."""
     response_model = await service.get_balance()
     return PlainTextResponse(content=response_model.model_dump_json())
@@ -53,7 +55,9 @@ async def balance(service: ServiceDigipos = Depends(get_digipos_service)):
     response_model=ApiResponse,
     response_class=PlainTextResponse,
 )
-async def profile(service: ServiceDigipos = Depends(get_digipos_service)):
+async def profile(
+    service: ServiceDigiposAccount = Depends(get_digipos_account_service),
+):
     """Ambil profile dari Digipos API."""
     response_model = await service.get_profile()
     return PlainTextResponse(content=response_model.model_dump_json())
@@ -65,7 +69,9 @@ async def profile(service: ServiceDigipos = Depends(get_digipos_service)):
     response_model=ApiResponse,
     response_class=PlainTextResponse,
 )
-async def list_va(service: ServiceDigipos = Depends(get_digipos_service)):
+async def list_va(
+    service: ServiceDigiposAccount = Depends(get_digipos_account_service),
+):
     """Ambil list_va dari Digipos API."""
     response_model = await service.get_list_va()
     return PlainTextResponse(content=response_model.model_dump_json())
@@ -77,7 +83,9 @@ async def list_va(service: ServiceDigipos = Depends(get_digipos_service)):
     response_model=ApiResponse,
     response_class=PlainTextResponse,
 )
-async def get_reward(service: ServiceDigipos = Depends(get_digipos_service)):
+async def get_reward(
+    service: ServiceDigiposAccount = Depends(get_digipos_account_service),
+):
     """Ambil rewardsummary dari Digipos API."""
     response_model = await service.get_rewardsummary()
     return PlainTextResponse(content=response_model.model_dump_json())
@@ -89,7 +97,9 @@ async def get_reward(service: ServiceDigipos = Depends(get_digipos_service)):
     response_model=ApiResponse,
     response_class=PlainTextResponse,
 )
-async def get_banner(service: ServiceDigipos = Depends(get_digipos_service)):
+async def get_banner(
+    service: ServiceDigiposAccount = Depends(get_digipos_account_service),
+):
     """Ambil banner dari Digipos API."""
     response_model = await service.get_banner()
     return PlainTextResponse(content=response_model.model_dump_json())
@@ -101,7 +111,7 @@ async def get_banner(service: ServiceDigipos = Depends(get_digipos_service)):
     response_model=ApiResponse,
     response_class=PlainTextResponse,
 )
-async def logout(service: ServiceDigipos = Depends(get_digipos_service)):
+async def logout(service: ServiceDigiposAccount = Depends(get_digipos_account_service)):
     """Logout dari Digipos API."""
     response_model = await service.get_logout()
     return PlainTextResponse(content=response_model.model_dump_json())

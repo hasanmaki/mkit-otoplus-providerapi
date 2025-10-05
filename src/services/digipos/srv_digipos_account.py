@@ -8,7 +8,7 @@ from src.services.clients.base import BaseApiClient
 from src.services.utils.response_utils import response_as_dict
 
 
-class ServiceDigipos(BaseApiClient):
+class ServiceDigiposAccount(BaseApiClient):
     def __init__(self, client: httpx.AsyncClient, config: DigiposConfig) -> None:
         super().__init__(client, config)
         self.config: DigiposConfig = config
