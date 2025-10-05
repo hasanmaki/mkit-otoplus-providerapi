@@ -15,5 +15,5 @@ async def test_api(
     service: ServiceDigiposAccount = Depends(get_digipos_account_service),
 ):
     """exploring the api calls and methode."""
-    response_model = await service.get_profile()
+    response_model = await service.get_balance()
     return response_model

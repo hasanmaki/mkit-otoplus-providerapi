@@ -58,3 +58,31 @@ class ServiceDigiposAccount(BaseApiClient):
         }
         data = await self._call_api_core(self.config.endpoints.login, params)
         return await self._return(data)
+
+    async def verify_otp(self, otp: str) -> str | Dict[str, Any]:
+        params = {
+            "username": self.config.username,
+            "otp": otp,
+        }
+        data = await self._call_api_core(self.config.endpoints.verify_otp, params)
+        return await self._return(data)
+
+    async def logout(self) -> str | Dict[str, Any]:
+        params = {"username": self.config.username}
+        data = await self._call_api_core(self.config.endpoints.logout, params)
+        return await self._return(data)
+
+    async def list_va(self) -> str | Dict[str, Any]:
+        params = {"username": self.config.username}
+        data = await self._call_api_core(self.config.endpoints.list_va, params)
+        return await self._return(data)
+
+    async def reward(self) -> str | Dict[str, Any]:
+        params = {"username": self.config.username}
+        data = await self._call_api_core(self.config.endpoints.reward, params)
+        return await self._return(data)
+
+    async def banner(self) -> str | Dict[str, Any]:
+        params = {"username": self.config.username}
+        data = await self._call_api_core(self.config.endpoints.banner, params)
+        return await self._return(data)
