@@ -11,7 +11,7 @@ class ApiResponseGeneric[T](BaseModel):
     next kita akan bermain dsini biar enak.
     """
 
-    status_code: int
+    api_status_code: int
     meta: dict[str, Any] | None
     data: T
 
@@ -23,7 +23,7 @@ class ApiResponse(BaseModel):
 
     nanti refactor kalo calm"""
 
-    status_code_target: int
+    api_status_code: int
     meta: dict[str, Any] | None
     data: Any
 

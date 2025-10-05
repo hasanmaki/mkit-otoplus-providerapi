@@ -5,6 +5,8 @@ from fastapi.responses import PlainTextResponse
 
 from src.deps import ServiceDigiposAccount, get_digipos_account_service
 from src.schemas.base_response import ApiResponse
+from src.schemas.sch_digipos import ResponseBalance
+from src.services.utils.response_utils import model_to_text
 
 router = APIRouter(prefix="/digipos", tags=["digipos"])
 
@@ -36,17 +38,31 @@ async def verify_otp(
 
 
 @router.get(
-    "/balance",
+    path="/balance",
     summary="Forward balance command to Digipos API",
-    response_model=ApiResponse,
+    response_model=ResponseBalance,
+    responses={
+        200: {
+            "content": {
+                "text/plain": {
+                    "example": "api_status_code=200#meta={'x-powered-by': 'Express', 'content_type': 'application/json; charset=utf-8', 'content_length': '146', 'elapsed_ms': 887.54, 'host': '10.0.0.3', 'path': '/balance', 'method': 'GET'}#data={'ngrs': {'1000': '0', '5000': '0', '10000': '0', '15000': '0', '20000': '0', '25000': '0', '50000': '0', '100000': '0', 'BULK': '0'}, 'linkaja': '3230', 'finpay': '0'}"
+                }
+            }
+        }
+    },
     response_class=PlainTextResponse,
 )
 async def balance(
     service: ServiceDigiposAccount = Depends(get_digipos_account_service),
 ):
-    """Ambil balance dari Digipos API."""
-    response_model = await service.get_balance()
-    return PlainTextResponse(content=response_model.model_dump_json())
+    """
+    Ambil balance dari Digipos API dan return sebagai text-friendly.
+    Format:
+    api_status_code=&meta=&data=
+    """
+    model_instance = await service.get_balance()
+    text_response = model_to_text(model_instance)
+    return PlainTextResponse(content=text_response)
 
 
 @router.get(

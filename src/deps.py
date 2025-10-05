@@ -6,7 +6,7 @@ from httpx import AsyncClient
 from src.config.cfg_api_clients import DigiposConfig
 from src.config.settings import AppSettings
 from src.services.clients.manager import ApiClientManager
-from src.services.digipos.srv_digipos_account import ServiceDigiposAccount
+from src.services.digipos.srv_accounts import ServiceDigiposAccount
 
 
 async def get_appsettings(request: Request) -> AppSettings:

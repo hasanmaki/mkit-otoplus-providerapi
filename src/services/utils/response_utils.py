@@ -70,7 +70,24 @@ def response_as_dict(response: httpx.Response) -> Dict[str, Any]:
         )
 
     return {
-        "status_code_target": response.status_code,
+        "api_status_code": response.status_code,
         "meta": meta,
         "data": data,
     }
+
+
+def model_to_text(model: Any) -> str:
+    """
+    Serialize Pydantic model ke text-friendly format:
+    api_status_code=&meta=&data=
+    - meta tetap dict
+    - data tetap dict / list
+    Bisa dipakai semua model Pydantic yang memiliki atribut:
+    api_status_code, meta, data
+    """
+    fields = model.model_dump()
+    return (
+        f"api_status_code={fields.get('api_status_code', '')}#"
+        f"meta={fields.get('meta', {})}#"
+        f"data={fields.get('data', {})}"
+    )
