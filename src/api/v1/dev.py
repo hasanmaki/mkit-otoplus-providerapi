@@ -1,5 +1,7 @@
 """router testing for developements exploring."""
 
+import json
+
 from fastapi import APIRouter
 from fastapi.responses import PlainTextResponse
 
@@ -12,8 +14,14 @@ router = APIRouter(prefix="/test", tags=["test"])
     "/get_api",
     summary="just an explore",
     response_class=PlainTextResponse,
-    response_model=str,
 )
 async def test_api(service: ServiceDigipos = Depends(get_digipos_service)):
     """exploring the api calls and methode."""
-    return await service.get_balance()
+
+    response_data: dict = await service.get_balance()
+
+    # 1. Serialisasi Dict menjadi string JSON
+    json_string = json.dumps(response_data)
+
+    # 2. Bungkus string dalam PlainTextResponse
+    return PlainTextResponse(content=json_string)

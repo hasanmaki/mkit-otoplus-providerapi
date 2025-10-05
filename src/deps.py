@@ -5,7 +5,7 @@ from httpx import AsyncClient
 
 from src.config.cfg_api_clients import DigiposConfig
 from src.config.settings import AppSettings
-from src.core.clients.manager import ApiClientManager
+from src.services.clients.manager import ApiClientManager
 from src.services.digipos.srv_digipos import ServiceDigipos
 
 

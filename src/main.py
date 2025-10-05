@@ -8,9 +8,9 @@ from loguru import logger
 from src.api import register_api_v1
 from src.config.cfg_logging import setup_logging
 from src.config.settings import get_settings
-from src.core.clients.manager import ApiClientManager
 from src.custom.exceptions import AppExceptionError, global_exception_handler
 from src.custom.middlewares import LoggingMiddleware
+from src.services.clients.manager import ApiClientManager
 
 logging.getLogger("httpcore").setLevel(logging.WARNING)
 logging.getLogger("httpx").setLevel(logging.INFO)
@@ -30,6 +30,8 @@ async def lifespan(app: FastAPI):
     logger.bind(settings=settings).debug("Settings loaded")
     yield
     await client_manager.stop()
+    app.state.api_manager = None
+    app.state.settings = None
     logger.debug("Application shutdown")
 
 

@@ -17,6 +17,4 @@ class ServiceDigipos(BaseApiClient):
         endpoint = self.config.endpoints.balance
         params = {"username": self.config.username}
         response = await self.cst_get(endpoint, params=params)
-        if self.response_type == "text":
-            return response.text  # type: ignore
         return response
