@@ -1,5 +1,3 @@
-from typing import Any, Dict
-
 import httpx
 from loguru import logger
 
@@ -17,7 +15,7 @@ class BaseApiClient:
             client_name=self.__class__.__name__, base_url=config.base_url
         )
 
-    async def _handle_request(self, method: str, url: str, **kwargs) -> Dict[str, Any]:
+    async def _handle_request(self, method: str, url: str, **kwargs) -> httpx.Response:
         self.log.debug(f"HTTP {method} {url} {kwargs}")
         try:
             response = await getattr(self.client, method.lower())(url, **kwargs)
@@ -45,7 +43,7 @@ class BaseApiClient:
                 context={"url": str(exc.request.url) if exc.request else url},
                 cause=exc,
             ) from exc
-        return response.json()
+        return response
 
-    async def cst_get(self, url: str, **kwargs) -> Dict[str, Any]:
+    async def cst_get(self, url: str, **kwargs) -> httpx.Response:
         return await self._handle_request("GET", url, **kwargs)
