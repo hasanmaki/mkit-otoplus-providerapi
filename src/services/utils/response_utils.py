@@ -7,12 +7,15 @@ from src.config.settings import AppSettings
 from src.custom.exceptions import HttpResponseError
 
 
-def _parse_response_body(response: httpx.Response) -> Any:
+# ==========================================================
+# 1️⃣ Low-level util: parser
+# ==========================================================
+def parse_response_body(response: httpx.Response) -> Any:
     """
-    Safely parse response body:
-    - Prefer JSON
-    - Fallback ke text
-    - Kalau JSON bukan dict/list, wrap dalam {"raw": data}
+    Parse isi body dari httpx.Response:
+    - Coba JSON → dict/list
+    - Kalau bukan JSON, fallback ke text
+    - Kalau JSON tapi bukan dict/list, wrap {"raw": data}
     """
     try:
         data = response.json()
@@ -23,9 +26,14 @@ def _parse_response_body(response: httpx.Response) -> Any:
         return response.text
 
 
-def _build_meta_info(response: httpx.Response, debug: bool = False) -> Dict[str, Any]:
+# ==========================================================
+# 2️⃣ Low-level util: meta builder
+# ==========================================================
+def build_meta_info(response: httpx.Response, *, debug: bool = False) -> Dict[str, Any]:
     """
-    Buat meta info minimal atau lengkap, tergantung debug mode.
+    Bangun meta info response:
+    - Minimal: url + method
+    - Kalau debug=True → tambah info detail (elapsed, host, headers x-*)
     """
     meta: Dict[str, Any] = {
         "url": str(response.request.url),
@@ -39,13 +47,16 @@ def _build_meta_info(response: httpx.Response, debug: bool = False) -> Dict[str,
             "elapsed_ms": response.elapsed.total_seconds() * 1000,
             "host": response.request.url.host,
             "headers": {
-                h: v for h, v in response.headers.items() if h.lower().startswith("x-")
+                k: v for k, v in response.headers.items() if k.lower().startswith("x-")
             },
         })
 
     return meta
 
 
+# ==========================================================
+# 3️⃣ High-level util: normalizer utama
+# ==========================================================
 def response_upstream_to_dict(
     response: httpx.Response,
     settings: Optional[AppSettings] = None,
@@ -53,19 +64,16 @@ def response_upstream_to_dict(
     debug_override: Optional[bool] = None,
 ) -> Dict[str, Any]:
     """
-    Normalisasi response dari API target:
-    - Tangani JSON/text fallback
-    - Standarisasi struktur output
-    - Meta minimal + bisa auto-expand kalau debug aktif
-
-    Output:
+    Normalisasi response upstream ke struktur standar:
     {
         "api_status_code": int,
-        "meta": dict[str, Any],
+        "meta": dict,
         "data": Any
     }
     """
-    data = _parse_response_body(response)
+    data = parse_response_body(response)
+
+    # --- validasi isi ---
     if data in (None, ""):
         logger.warning(f"Empty response body from {response.request.url}")
         raise HttpResponseError(
@@ -77,20 +85,24 @@ def response_upstream_to_dict(
             },
         )
 
-    # --- tentukan apakah debug aktif ---
-    if debug_override is not None:
-        debug_mode = debug_override
-    elif settings is not None:
-        debug_mode = getattr(settings.application, "debug", False)
-    else:
-        debug_mode = False
+    # --- tentukan debug mode ---
+    debug_mode = (
+        debug_override
+        if debug_override is not None
+        else getattr(settings.application, "debug", False)
+        if settings is not None
+        else False
+    )
 
-    # --- bangun meta sesuai mode ---
-    meta = _build_meta_info(response, debug=debug_mode)
+    # --- bangun meta ---
+    meta = build_meta_info(response, debug=debug_mode)
 
     # --- hasil akhir ---
-    return {
+    normalized = {
         "api_status_code": response.status_code,
         "meta": meta,
         "data": data,
     }
+
+    logger.debug(f"[response_upstream_to_dict] normalized={normalized}")
+    return normalized

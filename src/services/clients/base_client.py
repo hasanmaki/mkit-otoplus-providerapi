@@ -8,9 +8,12 @@ from src.custom.exceptions import HTTPConnectionError, HttpResponseError
 class BaseApiClient:
     """Base class untuk mengelola klien HTTP eksternal."""
 
-    def __init__(self, client: httpx.AsyncClient, config: ApiBaseConfig):
+    def __init__(
+        self, client: httpx.AsyncClient, config: ApiBaseConfig, debug: bool = False
+    ):
         self.client = client
         self.config = config
+        self.debug = debug
         self.log = logger.bind(
             client_name=self.__class__.__name__, base_url=config.base_url
         )
@@ -20,11 +23,14 @@ class BaseApiClient:
         try:
             response = await getattr(self.client, method.lower())(url, **kwargs)
             response.raise_for_status()
+
+            if self.debug:
+                self.log.debug(
+                    f"Response [{response.status_code}]: {response.text[:300]}"
+                )
+
         except httpx.HTTPStatusError as exc:
-            self.log.error(
-                f"Response Error: {exc.response.status_code}",
-                status=exc.response.status_code,
-            )
+            self.log.error(f"Response Error: {exc.response.status_code}")
             raise HttpResponseError(
                 message=f"External service responded with status {exc.response.status_code}",
                 context={
@@ -35,15 +41,14 @@ class BaseApiClient:
             ) from exc
 
         except httpx.RequestError as exc:
-            self.log.error(
-                f"Connection Error: {exc.__class__.__name__}", url=str(exc.request.url)
-            )
+            self.log.error(f"Connection Error: {exc.__class__.__name__}")
             raise HTTPConnectionError(
                 message=f"Connection error to external service: {exc.__class__.__name__}",
                 context={"url": str(exc.request.url) if exc.request else url},
                 cause=exc,
             ) from exc
+
         return response
 
-    async def cst_get(self, url: str, **kwargs) -> httpx.Response:
+    async def get(self, url: str, **kwargs) -> httpx.Response:
         return await self._handle_request("GET", url, **kwargs)
