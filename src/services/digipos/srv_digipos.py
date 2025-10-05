@@ -59,7 +59,7 @@ class ServiceDigipos(BaseApiClient):
         raw_response = await self.cst_get(endpoint, params=params)
         return ApiResponse(**response_as_dict(raw_response))
 
-    async def banner(self) -> ApiResponse:
+    async def get_banner(self) -> ApiResponse:
         """Get banner from Digipos."""
         endpoint = self.config.endpoints.banner
         params = {"username": self.config.username}
