@@ -9,8 +9,15 @@ class ApiResponseGeneric[T](BaseModel):
     """base schemas untuk semua response dari api yang sudah di standardisasi."""
 
     status_code: int
-    content_length: int | None
-    meta: dict[str, Any]
+    meta: dict[str, Any] | None
     data: T
+
+    model_config = {"extra": "allow"}
+
+
+class ApiResponse(BaseModel):
+    status_code_target: int
+    meta: dict[str, Any] | None
+    data: Any
 
     model_config = {"extra": "allow"}
