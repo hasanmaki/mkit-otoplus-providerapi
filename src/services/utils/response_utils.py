@@ -1,8 +1,9 @@
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 import httpx
 from loguru import logger
 
+from src.config.settings import AppSettings
 from src.custom.exceptions import HttpResponseError
 
 
@@ -22,41 +23,50 @@ def _parse_response_body(response: httpx.Response) -> Any:
         return response.text
 
 
-def _get_meta_info(response: httpx.Response) -> Dict[str, Any] | None:
+def _build_meta_info(response: httpx.Response, debug: bool = False) -> Dict[str, Any]:
     """
-    Ambil semua header yang dimulai dengan x- (case-insensitive)
-    dan optional info lain.
+    Buat meta info minimal atau lengkap, tergantung debug mode.
     """
-    meta: Dict[str, Any] = {}
+    meta: Dict[str, Any] = {
+        "url": str(response.request.url),
+        "method": response.request.method,
+    }
 
-    # custom x-* headers
-    for header, value in response.headers.items():
-        if header.lower().startswith("x-"):
-            meta[header] = value
+    if debug:
+        meta.update({
+            "status_code": response.status_code,
+            "content_type": response.headers.get("Content-Type"),
+            "elapsed_ms": response.elapsed.total_seconds() * 1000,
+            "host": response.request.url.host,
+            "headers": {
+                h: v for h, v in response.headers.items() if h.lower().startswith("x-")
+            },
+        })
 
-    # tambahan info opsional
-    meta["content_type"] = response.headers.get("Content-Type")
-    meta["elapsed_ms"] = response.elapsed.total_seconds() * 1000
-    meta["host"] = response.request.url.host
-    meta["method"] = response.request.method
-
-    return meta or None
+    return meta
 
 
-def response_upstream_to_dict(response: httpx.Response) -> Dict[str, Any]:
+def response_upstream_to_dict(
+    response: httpx.Response,
+    settings: Optional[AppSettings] = None,
+    *,
+    debug_override: Optional[bool] = None,
+) -> Dict[str, Any]:
     """
-    Normalisasi response dari API target.
-    Output standar:
+    Normalisasi response dari API target:
+    - Tangani JSON/text fallback
+    - Standarisasi struktur output
+    - Meta minimal + bisa auto-expand kalau debug aktif
+
+    Output:
     {
-        "status_code_target": int,
-        "meta": dict[str, Any] | None,
+        "api_status_code": int,
+        "meta": dict[str, Any],
         "data": Any
     }
     """
     data = _parse_response_body(response)
-    meta = _get_meta_info(response)
-
-    if data is None or data == "":
+    if data in (None, ""):
         logger.warning(f"Empty response body from {response.request.url}")
         raise HttpResponseError(
             message="Provider returned empty response body",
@@ -67,6 +77,18 @@ def response_upstream_to_dict(response: httpx.Response) -> Dict[str, Any]:
             },
         )
 
+    # --- tentukan apakah debug aktif ---
+    if debug_override is not None:
+        debug_mode = debug_override
+    elif settings is not None:
+        debug_mode = getattr(settings.application, "debug", False)
+    else:
+        debug_mode = False
+
+    # --- bangun meta sesuai mode ---
+    meta = _build_meta_info(response, debug=debug_mode)
+
+    # --- hasil akhir ---
     return {
         "api_status_code": response.status_code,
         "meta": meta,

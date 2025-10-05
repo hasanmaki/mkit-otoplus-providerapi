@@ -10,15 +10,28 @@ from pathlib import Path
 
 from src.config.cfg_api_clients import DigiposConfig
 from pydantic_settings import BaseSettings, SettingsConfigDict, TomlConfigSettingsSource
+from pydantic import BaseModel, Field
 
 BASE_DIR = Path(__file__).resolve().parents[2]
 CONFIG_FILE = "config.toml"
 CONFIG_PATH = BASE_DIR / CONFIG_FILE
 
 
+class CoreAppSettings(BaseModel):
+    """Core application settings."""
+
+    name: str = "mkit-otoplus-providerapi"
+    version: str = "0.1.0"
+    description: str = "API Gateway for Otoplus Provider Integrations"
+    debug: bool = False
+    environment: str = "development"
+    log_level: str = "INFO"
+
+
 class AppSettings(BaseSettings):
     """application settings merged from here."""
 
+    application: CoreAppSettings = Field(default_factory=CoreAppSettings)
     digipos: DigiposConfig
     # isimple: IsimpleConfig
 

@@ -45,6 +45,9 @@ DepDigiposApiClient = Annotated[AsyncClient, Depends(get_digipos_client)]
 
 async def get_digipos_account_service(
     digipos_client: DepDigiposApiClient,
+    appsettings: DepAppSettings,
     digipos_settings: DepDigiposSettings,
 ) -> ServiceDigiposAccount:
-    return ServiceDigiposAccount(client=digipos_client, config=digipos_settings)
+    return ServiceDigiposAccount(
+        client=digipos_client, settings=appsettings, config=digipos_settings
+    )
