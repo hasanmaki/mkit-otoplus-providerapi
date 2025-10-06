@@ -33,25 +33,15 @@ class ServiceDigiposAccount(BaseApiClient):
             response=raw_response, debug=self.settings.application.debug
         )
 
-    async def _return(self, data: Dict[str, Any]) -> str | Dict[str, Any]:
-        """
-        Tentukan output final:
-        - dict → kalau debug (developer mode)
-        - string → kalau production (encoded)
-        """
-        # if self.settings.application.debug:
-        #     return data
-        return encode_response_upstream(data)
-
     async def get_balance(self) -> dict | str:
         params = {"username": self.config.username}
         data = await self._call_api_core(self.config.endpoints.balance, params)
-        return await self._return(data)
+        return encode_response_upstream(data)
 
     async def get_profile(self) -> str | Dict[str, Any]:
         params = {"username": self.config.username}
         data = await self._call_api_core(self.config.endpoints.profile, params)
-        return await self._return(data)
+        return encode_response_upstream(data)
 
     async def login(self) -> str | Dict[str, Any]:
         params = {
@@ -59,7 +49,7 @@ class ServiceDigiposAccount(BaseApiClient):
             "password": self.config.password,
         }
         data = await self._call_api_core(self.config.endpoints.login, params)
-        return await self._return(data)
+        return encode_response_upstream(data)
 
     async def verify_otp(self, otp: str) -> str | Dict[str, Any]:
         params = {
@@ -67,24 +57,24 @@ class ServiceDigiposAccount(BaseApiClient):
             "otp": otp,
         }
         data = await self._call_api_core(self.config.endpoints.verify_otp, params)
-        return await self._return(data)
+        return encode_response_upstream(data)
 
     async def logout(self) -> str | Dict[str, Any]:
         params = {"username": self.config.username}
         data = await self._call_api_core(self.config.endpoints.logout, params)
-        return await self._return(data)
+        return encode_response_upstream(data)
 
     async def list_va(self) -> str | Dict[str, Any]:
         params = {"username": self.config.username}
         data = await self._call_api_core(self.config.endpoints.list_va, params)
-        return await self._return(data)
+        return encode_response_upstream(data)
 
     async def reward(self) -> str | Dict[str, Any]:
         params = {"username": self.config.username}
         data = await self._call_api_core(self.config.endpoints.reward, params)
-        return await self._return(data)
+        return encode_response_upstream(data)
 
     async def banner(self) -> str | Dict[str, Any]:
         params = {"username": self.config.username}
         data = await self._call_api_core(self.config.endpoints.banner, params)
-        return await self._return(data)
+        return encode_response_upstream(data)

@@ -24,5 +24,7 @@ extra:
 # register here for extra fields that consistantly appear in logs
 activation:
   # set to false to disable logging for specific modules
-  - ["my_module.secret", false]
+  - ["httpx_retries", false]
   - ["httpcore", true]
+  - ["httpx", false]
+  - ["uvicorn", false]
