@@ -29,6 +29,8 @@ class InterceptHandler(logging.Handler):
 
 def setup_logging() -> None:
     """Setup logging configuration."""
+    logging.getLogger("httpcore").setLevel(logging.WARNING)
+    logging.getLogger("httpx").setLevel(logging.INFO)
     log_config = LoguruConfig()
     log_config.load(config_or_file="logging.yaml")
 

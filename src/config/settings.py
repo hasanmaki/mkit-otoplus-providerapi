@@ -8,7 +8,7 @@ from functools import lru_cache
 from pathlib import Path
 
 
-from src.config.cfg_api_clients import ClientBaseConfig, DigiposConfig
+from src.config.cfg_api_clients import DigiposConfig
 from pydantic_settings import BaseSettings, SettingsConfigDict, TomlConfigSettingsSource
 from pydantic import BaseModel, Field
 
@@ -31,7 +31,6 @@ class AppSettings(BaseSettings):
     """application settings merged from here."""
 
     application: CoreAppSettings = Field(default_factory=CoreAppSettings)
-    http_client: ClientBaseConfig = Field(default_factory=ClientBaseConfig)
     digipos: DigiposConfig
     # isimple: IsimpleConfig
 

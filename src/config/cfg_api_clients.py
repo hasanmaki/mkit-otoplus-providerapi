@@ -20,17 +20,14 @@ class ClientLimits(BaseModel):
     keepalive_expiry: int = 300
 
 
-class ClientBaseConfig(BaseModel):
-    retry: ClientRetry = Field(default_factory=ClientRetry)
-    limits: ClientLimits = Field(default_factory=ClientLimits)
-
-
 class ApiBaseConfig(BaseModel):
     base_url: HttpUrl
     headers: dict[str, str] = Field(default_headers)
     timeout: int = 10
     http2: bool = Field(default=False)
     debug: bool = Field(default=False)
+    retry: ClientRetry = Field(default_factory=ClientRetry)
+    limits: ClientLimits = Field(default_factory=ClientLimits)
 
 
 class DigiposEndpoints(BaseModel):

@@ -33,14 +33,26 @@ def get_api_manager(request: Request) -> ApiClientManager:
     return request.app.state.api_manager
 
 
-async def get_digipos_client(
-    manager: ApiClientManager = Depends(get_api_manager),
-) -> AsyncClient:
-    """get digipos client from api manager.(api manager is from app state)"""
-    return manager.get_client("digipos")
+# async def get_digipos_client(
+#     manager: ApiClientManager = Depends(get_api_manager),
+# ) -> AsyncClient:
+#     """get digipos client from api manager.(api manager is from app state)"""
+#     return manager.get_client("digipos")
 
 
-DepDigiposApiClient = Annotated[AsyncClient, Depends(get_digipos_client)]
+# DepDigiposApiClient = Annotated[AsyncClient, Depends(get_digipos_client)]
+
+
+# Opsional pattern
+def get_client_dependency(name: str):
+    async def _dep(manager: ApiClientManager = Depends(get_api_manager)) -> AsyncClient:
+        return manager.get_client(name)
+
+    return _dep
+
+
+DepDigiposApiClient = Annotated[AsyncClient, Depends(get_client_dependency("digipos"))]
+# DepIsimpleApiClient = Annotated[AsyncClient, Depends(get_client_dependency("isimple"))]
 
 
 async def get_digipos_account_service(

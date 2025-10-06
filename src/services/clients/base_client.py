@@ -1,13 +1,12 @@
 # File: src/services/clients/base_client.py
 
-from typing import Any, Dict
+from typing import Any
 
 import httpx
 from loguru import logger
 
 from src.config.cfg_api_clients import ApiBaseConfig
 from src.custom.exceptions import HTTPConnectionError, HttpResponseError
-from src.services.utils.response_utils import response_to_normalized_dict
 
 
 class BaseApiClient:
@@ -27,8 +26,6 @@ class BaseApiClient:
         self.log = logger.bind(
             client_name=self.__class__.__name__, base_url=config.base_url
         )
-
-    # --- PRIVATE METHODS (SRP Logic) ---
 
     def _log_request(self, method: str, url: str, **kwargs: Any) -> None:
         """Log request detail jika debug mode aktif."""
@@ -104,31 +101,8 @@ class BaseApiClient:
         except httpx.HTTPStatusError as exc:
             self._handle_http_status_error(exc)
 
-        # Pengecualian akan di-raise di fungsi handler di atas,
-        # jadi baris ini tidak akan tercapai, tapi perlu untuk menghindari potensi warning.
         raise Exception("Unhandled exception path reached.")
-
-    # --- PUBLIC API METHODS ---
 
     async def get(self, url: str, **kwargs) -> httpx.Response:
         """Wrapper GET call."""
         return await self._handle_request("GET", url, **kwargs)
-
-    async def post(self, url: str, **kwargs) -> httpx.Response:
-        """Wrapper POST call."""
-        return await self._handle_request("POST", url, **kwargs)
-
-    # Tambahkan put, delete, etc. jika diperlukan
-
-    async def _call_and_normalize(
-        self, method: str, endpoint: str, **kwargs
-    ) -> Dict[str, Any]:
-        """Eksekusi HTTP call dan normalisasi hasilnya ke dict standar."""
-        raw_response = await self._handle_request(method, endpoint, **kwargs)
-
-        # Meneruskan self.debug ke utilitas normalisasi untuk metadata tambahan
-        normalized_data = response_to_normalized_dict(
-            response=raw_response, debug=self.debug
-        )
-
-        return normalized_data

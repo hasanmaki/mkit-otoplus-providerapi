@@ -1,4 +1,3 @@
-import logging
 from contextlib import asynccontextmanager
 
 import uvicorn
@@ -8,12 +7,10 @@ from loguru import logger
 from src.api import register_api_v1
 from src.config.cfg_logging import setup_logging
 from src.config.settings import get_settings
+from src.core.client import ApiClientManager, build_and_register
 from src.custom.exceptions import AppExceptionError, global_exception_handler
 from src.custom.middlewares import LoggingMiddleware
-from src.services.clients.manager import ApiClientManager
 
-logging.getLogger("httpcore").setLevel(logging.WARNING)
-logging.getLogger("httpx").setLevel(logging.INFO)
 setup_logging()
 
 settings = get_settings()
@@ -23,13 +20,26 @@ settings = get_settings()
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     logger.debug("Application startup")
+
+    # --- 1. Init manager ---
     client_manager = ApiClientManager()
+
+    # --- 2. Build & register client sekaligus ---
+    build_and_register(client_manager, "digipos", settings.digipos)
+    # build_and_register(client_manager, "isimple", settings.isimple)
+
+    # --- 3. Attach ke app.state ---
     app.state.settings = settings
     app.state.api_manager = client_manager
-    await client_manager.start()
+
+    # --- 4. Optional start all (misal ada preflight tasks) ---
+    await client_manager.start_all()
     logger.bind(settings=settings).debug("Settings loaded")
+
     yield
-    await client_manager.stop()
+
+    # --- 5. Shutdown semua client ---
+    await client_manager.stop_all()
     app.state.api_manager = None
     app.state.settings = None
     logger.debug("Application shutdown")
