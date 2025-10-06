@@ -50,7 +50,7 @@ async def explore_api(
     summary="just an explore (Reliable Content Check)",
 )
 async def explore_api_again(client: DepDigiposApiClient):
-    service = HttpServiceClient(client, service_name="Digipos")
+    service = HttpServiceClient(client)
     result = await service.safe_request(
         "GET", "command", params={"username": "WIR6289504"}
     )

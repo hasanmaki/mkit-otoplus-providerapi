@@ -21,16 +21,17 @@ class NormalizedResponse:
 
 
 class HttpServiceClient:
-    def __init__(self, client: httpx.AsyncClient, service_name: str = "Upstream"):
+    def __init__(self, client: httpx.AsyncClient, service_name: str | None = None):
+        inferred_name = service_name or getattr(client.base_url, "host", "Upstream")
         self.client = client
-        self.log = logger.bind(service=service_name)
+        self.log = logger.bind(service=inferred_name)
 
     async def request(self, method: str, endpoint: str, **kwargs) -> httpx.Response:
         if method not in ["GET", "POST"]:
             raise ValueError(f"Invalid HTTP method: {method}")
 
         try:
-            self.log.debug(f"{method} {endpoint}")
+            self.log.debug(f"issuing {method} request with endpoint: {endpoint}")
             resp = await getattr(self.client, method.lower())(endpoint, **kwargs)
             resp.raise_for_status()
         except httpx.RequestError as exc:
@@ -77,6 +78,14 @@ class HttpServiceClient:
                     "headers": dict(resp.headers),
                     "elapsed": resp.elapsed.total_seconds(),
                 }
+
+            payload_type = type(data).__name__
+            payload_size = len(str(data))
+            content_type: str = resp.headers.get("content-type", "unknown")
+
+            self.log.debug(
+                f"{resp.request.method} {url} -> {status} | content_type={content_type} |type={payload_type}, size={payload_size}"
+            )
 
             return NormalizedResponse(status, url, meta, msg, data)
         except Exception as exc:
