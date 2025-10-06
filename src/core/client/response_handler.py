@@ -46,14 +46,6 @@ def handle_response(response: httpx.Response, *, debug: bool = False) -> dict[st
 
         log.debug(f"{method} {url} -> {status} | normalized")
 
-        return {
-            "status_code": status,
-            "url": url,
-            "meta": meta,
-            "message": msg,
-            "data": data,
-        }
-
     except Exception as exc:
         # fallback total: jika handler sendiri error
         log.error(f"ResponseHandler crashed: {exc}")
@@ -64,3 +56,10 @@ def handle_response(response: httpx.Response, *, debug: bool = False) -> dict[st
             "message": ResponseMessage.INTERNAL_ERROR,
             "data": {"raw": str(exc)},
         }
+    return {
+        "status_code": status,
+        "url": url,
+        "meta": meta,
+        "message": msg,
+        "data": data,
+    }

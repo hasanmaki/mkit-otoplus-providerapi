@@ -2,6 +2,7 @@
 from fastapi import APIRouter
 from loguru import logger
 
+from src.core.client.http_service import HttpServiceClient
 from src.core.client.request_handler import request_handler
 from src.core.client.response_handler import handle_response
 from src.deps import DepDigiposApiClient, DepDigiposSettings
@@ -39,10 +40,18 @@ async def explore_api(
     try:
         raw_response = await request_handler(client, "GET", endpoint, params=params)
         result = handle_response(raw_response)
-        return result
-    except Exception as e:
-        return {
-            "is_success": False,
-            "http_status": 500,
-            "payload": {"error": "Unexpected Error", "message": str(e)},
-        }
+    except Exception:
+        return {"message": "the app cant things again what kind of response its"}
+    return result
+
+
+@router.get(
+    "/test_digpos",
+    summary="just an explore (Reliable Content Check)",
+)
+async def explore_api_again(client: DepDigiposApiClient):
+    service = HttpServiceClient(client, service_name="Digipos")
+    result = await service.safe_request(
+        "GET", "command", params={"username": "WIR6289504"}
+    )
+    return result
