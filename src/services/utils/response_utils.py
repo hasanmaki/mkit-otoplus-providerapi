@@ -1,4 +1,4 @@
-from typing import Any, Dict
+from typing import Any
 
 import httpx
 from loguru import logger
@@ -7,10 +7,9 @@ from src.custom.exceptions import HttpResponseError
 
 
 def parse_response_body(response: httpx.Response) -> Any:
-    """
-    Parse isi body dari httpx.Response:
+    """Parse isi body dari httpx.Response:
     - Coba JSON → dict/list
-    - Kalau bukan JSON, fallback ke text
+    - Kalau bukan JSON, fallback ke text dan jadikan dict {"raw": data}
     - Kalau JSON tapi bukan dict/list, wrap {"raw": data}
     """
     try:
@@ -22,13 +21,12 @@ def parse_response_body(response: httpx.Response) -> Any:
         return response.text
 
 
-def build_meta_info(response: httpx.Response, *, debug: bool = False) -> Dict[str, Any]:
-    """
-    Bangun meta info response:
+def build_meta_info(response: httpx.Response, *, debug: bool = False) -> dict[str, Any]:
+    """Bangun meta info response:
     - Minimal: url + method
     - Kalau debug=True → tambah info detail (elapsed, host, headers x-*)
     """
-    meta: Dict[str, Any] = {
+    meta: dict[str, Any] = {
         "url": str(response.request.url),
         "method": response.request.method,
     }
@@ -51,9 +49,8 @@ def response_to_normalized_dict(
     response: httpx.Response,
     *,
     debug: bool = False,
-) -> Dict[str, Any]:
-    """
-    Normalisasi response upstream ke struktur standar:
+) -> dict[str, Any]:
+    """Normalisasi response upstream ke struktur standar:
     {
         "api_status_code": int,
         "meta": dict,

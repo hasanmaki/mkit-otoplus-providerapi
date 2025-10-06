@@ -6,7 +6,7 @@ from src.config.cfg_api_clients import ApiBaseConfig
 
 
 class HttpClientFactory:
-    """Factory untuk membuat AsyncClient siap pakai dari config"""
+    """Factory untuk membuat AsyncClient siap pakai dari config."""
 
     @staticmethod
     def create_client(config: ApiBaseConfig) -> AsyncClient:
