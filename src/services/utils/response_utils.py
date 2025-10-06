@@ -7,9 +7,6 @@ from src.config.settings import AppSettings
 from src.custom.exceptions import HttpResponseError
 
 
-# ==========================================================
-# 1️⃣ Low-level util: parser
-# ==========================================================
 def parse_response_body(response: httpx.Response) -> Any:
     """
     Parse isi body dari httpx.Response:
@@ -26,9 +23,6 @@ def parse_response_body(response: httpx.Response) -> Any:
         return response.text
 
 
-# ==========================================================
-# 2️⃣ Low-level util: meta builder
-# ==========================================================
 def build_meta_info(response: httpx.Response, *, debug: bool = False) -> Dict[str, Any]:
     """
     Bangun meta info response:
@@ -54,9 +48,6 @@ def build_meta_info(response: httpx.Response, *, debug: bool = False) -> Dict[st
     return meta
 
 
-# ==========================================================
-# 3️⃣ High-level util: normalizer utama
-# ==========================================================
 def response_upstream_to_dict(
     response: httpx.Response,
     settings: Optional[AppSettings] = None,
