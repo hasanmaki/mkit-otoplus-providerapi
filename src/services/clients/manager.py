@@ -24,7 +24,7 @@ class ApiClientManager:
         self.log.info("Initializing HTTP clients...")
 
         # --- build retry strategy ---
-        client_settings: settings.ClientBaseConfig = settings.AppSettings.client
+        client_settings: settings.ClientBaseConfig = self.settings.http_client
         retry = Retry(
             total=client_settings.retry.total,
             backoff_factor=client_settings.retry.backoff_factor,  # exponential delay
@@ -33,8 +33,6 @@ class ApiClientManager:
         )
 
         transport = RetryTransport(retry=retry)
-
-        # --- build connection limits ---
 
         limits = httpx.Limits(
             max_keepalive_connections=client_settings.limits.max_keepalive_connections,

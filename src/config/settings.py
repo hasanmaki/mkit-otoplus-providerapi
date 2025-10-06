@@ -31,7 +31,7 @@ class AppSettings(BaseSettings):
     """application settings merged from here."""
 
     application: CoreAppSettings = Field(default_factory=CoreAppSettings)
-    client: ClientBaseConfig = Field(default_factory=ClientBaseConfig)
+    http_client: ClientBaseConfig = Field(default_factory=ClientBaseConfig)
     digipos: DigiposConfig
     # isimple: IsimpleConfig
 

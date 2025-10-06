@@ -1,18 +1,25 @@
+from typing import Any, Dict
+
 import httpx
 from loguru import logger
 
 from src.config.cfg_api_clients import ApiBaseConfig
 from src.custom.exceptions import HTTPConnectionError, HttpResponseError
+from src.services.utils.response_utils import response_to_normalized_dict
 
 
 class BaseApiClient:
     """Base class untuk mengelola klien HTTP eksternal."""
 
     def __init__(
-        self, client: httpx.AsyncClient, config: ApiBaseConfig, debug: bool = False
+        self,
+        client: httpx.AsyncClient,
+        config: ApiBaseConfig,
     ):
         self.client = client
         self.config = config
+        # Mengambil debug flag langsung dari config klien
+        self.debug = config.debug
         self.log = logger.bind(
             client_name=self.__class__.__name__, base_url=config.base_url
         )
@@ -21,10 +28,10 @@ class BaseApiClient:
         self,
         method: str,
         url: str,
-        debug: bool | None = False,
         **kwargs,
     ) -> httpx.Response:
-        if debug:
+        # Logging request hanya jika self.debug (config klien) adalah True
+        if self.debug:
             headers = kwargs.get("headers", self.client.headers)
             self.log.debug(
                 f"HTTP {method} {url} | headers={dict(headers)} | kwargs={kwargs}"
@@ -34,7 +41,8 @@ class BaseApiClient:
             response = await getattr(self.client, method.lower())(url, **kwargs)
             response.raise_for_status()
 
-            if debug:
+            # Logging response hanya jika self.debug adalah True
+            if self.debug:
                 self.log.debug(
                     f"Response [{response.status_code}] | headers={dict(response.headers)} | "
                     f"body={response.text[:300]}"
@@ -72,3 +80,17 @@ class BaseApiClient:
 
     async def get(self, url: str, **kwargs) -> httpx.Response:
         return await self._handle_request("GET", url, **kwargs)
+
+    # Fungsi baru yang menggabungkan Panggil dan Normalisasi
+    async def _call_and_normalize(
+        self, method: str, endpoint: str, **kwargs
+    ) -> Dict[str, Any]:
+        """Eksekusi HTTP call dan normalisasi hasilnya ke dict standar."""
+        raw_response = await self._handle_request(method, endpoint, **kwargs)
+
+        # Meneruskan self.debug ke utilitas normalisasi
+        normalized_data = response_to_normalized_dict(
+            response=raw_response, debug=self.debug
+        )
+
+        return normalized_data

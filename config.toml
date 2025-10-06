@@ -1,9 +1,3 @@
-[application]
-# ini nanti akan menjadi debugging untuk hal lain
-debug = true
-
-
-
 [digipos]
 # debug flag spesifik
 debug = true
