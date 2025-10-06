@@ -7,7 +7,7 @@ from loguru import logger
 from src.config.settings import AppSettings, DigiposConfig
 from src.services.clients.base_client import BaseApiClient
 from src.services.utils.output_utils import encode_response_upstream
-from src.services.utils.response_utils import response_upstream_to_dict
+from src.services.utils.response_utils import response_to_normalized_dict
 
 
 class ServiceDigiposAccount(BaseApiClient):
@@ -29,7 +29,9 @@ class ServiceDigiposAccount(BaseApiClient):
         Eksekusi HTTP call ke endpoint → normalisasi ke dict
         """
         raw_response = await self.get(endpoint, params=params)
-        return response_upstream_to_dict(raw_response, self.settings)
+        return response_to_normalized_dict(
+            response=raw_response, debug=self.settings.application.debug
+        )
 
     async def _return(self, data: Dict[str, Any]) -> str | Dict[str, Any]:
         """
@@ -37,11 +39,11 @@ class ServiceDigiposAccount(BaseApiClient):
         - dict → kalau debug (developer mode)
         - string → kalau production (encoded)
         """
-        if self.settings.application.debug:
-            return data
+        # if self.settings.application.debug:
+        #     return data
         return encode_response_upstream(data)
 
-    async def get_balance(self) -> str | Dict[str, Any]:
+    async def get_balance(self) -> dict | str:
         params = {"username": self.config.username}
         data = await self._call_api_core(self.config.endpoints.balance, params)
         return await self._return(data)

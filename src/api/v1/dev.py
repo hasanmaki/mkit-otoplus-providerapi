@@ -2,7 +2,11 @@
 
 from fastapi import APIRouter
 
-from src.deps import Depends, ServiceDigiposAccount, get_digipos_account_service
+from src.deps import (
+    Depends,
+    ServiceDigiposAccount,
+    get_digipos_account_service,
+)
 
 router = APIRouter(prefix="/test", tags=["test"])
 

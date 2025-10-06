@@ -20,7 +20,6 @@ class BaseApiClient:
 
     async def _handle_request(self, method: str, url: str, **kwargs) -> httpx.Response:
         if self.debug:
-            # log request headers + params/body
             headers = kwargs.get("headers", self.client.headers)
             self.log.debug(
                 f"HTTP {method} {url} | headers={dict(headers)} | kwargs={kwargs}"
@@ -31,7 +30,6 @@ class BaseApiClient:
             response.raise_for_status()
 
             if self.debug:
-                # log response status + headers + snippet body
                 self.log.debug(
                     f"Response [{response.status_code}] | headers={dict(response.headers)} | "
                     f"body={response.text[:300]}"

@@ -1,9 +1,8 @@
-from typing import Any, Dict, Optional
+from typing import Any, Dict
 
 import httpx
 from loguru import logger
 
-from src.config.settings import AppSettings
 from src.custom.exceptions import HttpResponseError
 
 
@@ -48,11 +47,10 @@ def build_meta_info(response: httpx.Response, *, debug: bool = False) -> Dict[st
     return meta
 
 
-def response_upstream_to_dict(
+def response_to_normalized_dict(
     response: httpx.Response,
-    settings: Optional[AppSettings] = None,
     *,
-    debug_override: Optional[bool] = None,
+    debug: bool = False,
 ) -> Dict[str, Any]:
     """
     Normalisasi response upstream ke struktur standar:
@@ -66,6 +64,7 @@ def response_upstream_to_dict(
 
     # --- validasi isi ---
     if data in (None, ""):
+        # Logging di sini hanya untuk kondisi ERROR/WARNING
         logger.warning(f"Empty response body from {response.request.url}")
         raise HttpResponseError(
             message="Provider returned empty response body",
@@ -76,17 +75,9 @@ def response_upstream_to_dict(
             },
         )
 
-    # --- tentukan debug mode ---
-    debug_mode = (
-        debug_override
-        if debug_override is not None
-        else getattr(settings.application, "debug", False)
-        if settings is not None
-        else False
-    )
-
     # --- bangun meta ---
-    meta = build_meta_info(response, debug=debug_mode)
+    # build_meta_info menggunakan parameter debug yang baru
+    meta = build_meta_info(response, debug=debug)
 
     # --- hasil akhir ---
     normalized = {
@@ -95,5 +86,8 @@ def response_upstream_to_dict(
         "data": data,
     }
 
-    logger.debug(f"[response_upstream_to_dict] normalized={normalized}")
+    # Logging debug dilakukan di sini untuk hasil normalisasi
+    if debug:
+        logger.debug(f"[response_to_normalized_dict] normalized={normalized}")
+
     return normalized
