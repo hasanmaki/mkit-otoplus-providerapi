@@ -45,13 +45,10 @@ async def explore_api(
     return result
 
 
-@router.get(
-    "/test_digpos",
-    summary="just an explore (Reliable Content Check)",
-)
-async def explore_api_again(client: DepDigiposApiClient):
+@router.get("/test_digipos")
+async def test(client: DepDigiposApiClient):
     service = HttpServiceClient(client)
     result = await service.safe_request(
-        "GET", "command", params={"username": "WIR6289504"}
+        "GET", "balance", params={"username": "WIR6289504"}
     )
     return result
