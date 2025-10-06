@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field, HttpUrl, field_validator
+from pydantic import BaseModel, Field, HttpUrl
 
 default_headers = {
     "User-Agent": "MKIT-Trimmer-API/1.0",
@@ -14,35 +14,28 @@ class ApiBaseConfig(BaseModel):
     http2: bool = Field(default=False)
 
 
-class APiBaseResponse(BaseModel):
-    type: str | None = Field(default="text")
-
-    @field_validator("type")
-    @classmethod
-    def validate_type(cls, v):
-        if v not in ["json", "text"]:
-            raise ValueError("type must be 'json' or 'text'")
-        return v
-
-
 class DigiposEndpoints(BaseModel):
-    login: str
-    verify_otp: str
-    balance: str
-    profile: str
-    list_va: str
-    logout: str
-    reward: str
-    banner: str
+    login: str = Field(default="add_account")
+    verify_otp: str = Field(default="add_account_otp")
+    balance: str = Field(default="balance")
+    profile: str = Field(default="profile")
+    list_va: str = Field(default="list_va")
+    logout: str = Field(default="logout")
+    reward: str = Field(default="reward_summary")
+    banner: str = Field(default="banner")
+    sim_status: str = Field(default="sim_status")
+
+
+class SimStatus(BaseModel):
     sim_status: str
 
 
 class DigiposConfig(ApiBaseConfig):
+    debug: bool = Field(default=False)
     username: str
     password: str
     pin: str
-    response: APiBaseResponse
-    endpoints: DigiposEndpoints
+    endpoints: DigiposEndpoints = Field(default_factory=DigiposEndpoints)
 
 
 class IsimpleConfig(ApiBaseConfig):

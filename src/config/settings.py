@@ -23,7 +23,6 @@ class CoreAppSettings(BaseModel):
     name: str = "mkit-otoplus-providerapi"
     version: str = "0.1.0"
     description: str = "API Gateway for Otoplus Provider Integrations"
-    debug: bool = False
     environment: str = "development"
     log_level: str = "INFO"
 

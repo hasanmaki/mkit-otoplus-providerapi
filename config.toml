@@ -1,9 +1,12 @@
 [application]
+# ini nanti akan menjadi debugging untuk hal lain
 debug = true
 
 
 
 [digipos]
+# debug flag spesifik
+debug = true
 # base url
 base_url = "http://10.0.0.3:10003/"
 
@@ -11,17 +14,3 @@ base_url = "http://10.0.0.3:10003/"
 username = "WIR6289504"
 password = "yourpassword"
 pin = "yourpin"
-
-[digipos.response]
-type = "text"
-
-[digipos.endpoints]
-login = "add_account"
-verify_otp = "add_account_otp"
-balance = "balance"
-profile = "profile"
-list_va = "list_va"
-logout = "logout"
-reward = "reward_summary"
-banner= "banner"
-sim_status ="sim_status"

@@ -30,7 +30,7 @@ class ServiceDigiposAccount(BaseApiClient):
         """
         raw_response = await self.get(endpoint, params=params)
         return response_to_normalized_dict(
-            response=raw_response, debug=self.settings.application.debug
+            response=raw_response, debug=self.config.debug
         )
 
     async def get_balance(self) -> dict | str:

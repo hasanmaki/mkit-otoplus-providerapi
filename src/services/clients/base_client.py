@@ -13,13 +13,18 @@ class BaseApiClient:
     ):
         self.client = client
         self.config = config
-        self.debug = debug
         self.log = logger.bind(
             client_name=self.__class__.__name__, base_url=config.base_url
         )
 
-    async def _handle_request(self, method: str, url: str, **kwargs) -> httpx.Response:
-        if self.debug:
+    async def _handle_request(
+        self,
+        method: str,
+        url: str,
+        debug: bool | None = False,
+        **kwargs,
+    ) -> httpx.Response:
+        if debug:
             headers = kwargs.get("headers", self.client.headers)
             self.log.debug(
                 f"HTTP {method} {url} | headers={dict(headers)} | kwargs={kwargs}"
@@ -29,7 +34,7 @@ class BaseApiClient:
             response = await getattr(self.client, method.lower())(url, **kwargs)
             response.raise_for_status()
 
-            if self.debug:
+            if debug:
                 self.log.debug(
                     f"Response [{response.status_code}] | headers={dict(response.headers)} | "
                     f"body={response.text[:300]}"
