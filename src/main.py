@@ -7,7 +7,7 @@ from loguru import logger
 from src.api import register_api_v1
 from src.config.cfg_logging import setup_logging
 from src.config.settings import get_settings
-from src.core.client import ApiClientManager, build_and_register
+from src.core.client import ApiClientManager, setup_client
 from src.custom.exceptions import AppExceptionError, global_exception_handler
 from src.custom.middlewares import LoggingMiddleware
 
@@ -21,24 +21,18 @@ settings = get_settings()
 async def lifespan(app: FastAPI):
     logger.debug("Application startup")
 
-    # --- 1. Init manager ---
     client_manager = ApiClientManager()
+    await setup_client(client_manager, "digipos", settings.digipos)
+    # add more client here
 
-    # --- 2. Build & register client sekaligus ---
-    build_and_register(client_manager, "digipos", settings.digipos)
-    # build_and_register(client_manager, "isimple", settings.isimple)
-
-    # --- 3. Attach ke app.state ---
     app.state.settings = settings
     app.state.api_manager = client_manager
 
-    # --- 4. Optional start all (misal ada preflight tasks) ---
     await client_manager.start_all()
     logger.bind(settings=settings).debug("Settings loaded")
 
     yield
 
-    # --- 5. Shutdown semua client ---
     await client_manager.stop_all()
     app.state.api_manager = None
     app.state.settings = None
