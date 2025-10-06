@@ -1,14 +1,15 @@
 from contextlib import asynccontextmanager
 
 import uvicorn
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from fastapi.responses import JSONResponse, PlainTextResponse
 from loguru import logger
 
 from src.api import register_api_v1
 from src.config.cfg_logging import setup_logging
 from src.config.settings import get_settings
 from src.core.client import ApiClientManager, setup_client
-from src.custom.exceptions import AppExceptionError, global_exception_handler
+from src.custom.exceptions import AppExceptionError
 from src.custom.middlewares import LoggingMiddleware
 
 setup_logging()
@@ -19,6 +20,7 @@ settings = get_settings()
 # lifespan
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    """Lifespan manager."""
     logger.debug("Application startup")
 
     client_manager = ApiClientManager()
@@ -29,7 +31,7 @@ async def lifespan(app: FastAPI):
     app.state.api_manager = client_manager
 
     await client_manager.start_all()
-    logger.bind(settings=settings).debug("Settings loaded")
+    logger.debug(f" settings Loadded with values {settings}")
 
     yield
 
@@ -44,8 +46,23 @@ app = FastAPI(lifespan=lifespan)
 # register middleware
 app.add_middleware(LoggingMiddleware)
 
+
 # register exception
-app.add_exception_handler(AppExceptionError, global_exception_handler)  # type: ignore
+@app.exception_handler(AppExceptionError)
+async def global_exception_handler(request: Request, exc: AppExceptionError):
+    """Handler dinamis untuk AppExceptionError (mendukung JSON dan TEXT)."""
+    response_format = request.headers.get(
+        "X-Response-Format"
+    ) or request.query_params.get("format", "json")
+
+    if response_format.lower() == "text":
+        text = f"[{exc.__class__.__name__}] {exc.message}"
+        if exc.context:
+            text += f" | Context: {exc.context}"
+        return PlainTextResponse(text, status_code=exc.status_code)
+
+    return JSONResponse(content=exc.to_dict(), status_code=exc.status_code)
+
 
 # register routers
 register_api_v1(app)
