@@ -13,7 +13,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict, TomlConfigSettin
 from pydantic import BaseModel, Field
 
 BASE_DIR = Path(__file__).resolve().parents[2]
-CONFIG_FILE = "config.toml"
+CONFIG_FILE = "settings.toml"
 CONFIG_PATH = BASE_DIR / CONFIG_FILE
 
 
