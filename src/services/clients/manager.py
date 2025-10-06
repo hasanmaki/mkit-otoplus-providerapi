@@ -1,10 +1,10 @@
-# src/core/clients/manager.py
 from typing import Dict
 
 import httpx
 from httpx_retries import Retry, RetryTransport
 from loguru import logger
 
+from src.config import settings
 from src.config.settings import get_settings
 
 
@@ -24,20 +24,22 @@ class ApiClientManager:
         self.log.info("Initializing HTTP clients...")
 
         # --- build retry strategy ---
+        client_settings: settings.ClientBaseConfig = settings.AppSettings.client
         retry = Retry(
-            total=5,
-            backoff_factor=0.5,  # exponential delay
-            status_forcelist=[429, 500, 502, 503, 504],
-            allowed_methods=["GET", "POST"],
+            total=client_settings.retry.total,
+            backoff_factor=client_settings.retry.backoff_factor,  # exponential delay
+            status_forcelist=client_settings.retry.status_forcelist,
+            allowed_methods=client_settings.retry.allowed_methods,
         )
 
         transport = RetryTransport(retry=retry)
 
         # --- build connection limits ---
+
         limits = httpx.Limits(
-            max_keepalive_connections=100,
-            max_connections=100,
-            keepalive_expiry=300,  # 5 menit
+            max_keepalive_connections=client_settings.limits.max_keepalive_connections,
+            max_connections=client_settings.limits.max_connections,
+            keepalive_expiry=client_settings.limits.keepalive_expiry,  # 5 menit
         )
 
         # --- register digipos client (default) ---
