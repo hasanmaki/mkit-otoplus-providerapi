@@ -8,7 +8,7 @@ from loguru import logger
 from src.api import register_api_v1
 from src.config.cfg_logging import setup_logging
 from src.config.settings import get_settings
-from src.core.client import ApiClientManager, setup_client
+from src.core.client import HttpClientManager, setup_client
 from src.custom.exceptions import AppExceptionError
 from src.custom.middlewares import LoggingMiddleware
 
@@ -23,7 +23,7 @@ async def lifespan(app: FastAPI):
     """Lifespan manager."""
     logger.debug("Application startup")
 
-    client_manager = ApiClientManager()
+    client_manager = HttpClientManager()
     await setup_client(client_manager, "digipos", settings.digipos)
     # add more client here
 

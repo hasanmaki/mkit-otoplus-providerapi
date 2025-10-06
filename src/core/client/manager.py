@@ -2,7 +2,7 @@ from httpx import AsyncClient
 from loguru import logger
 
 
-class ApiClientManager:
+class HttpClientManager:
     """Registry & lifecycle manager untuk semua AsyncClient."""
 
     def __init__(self) -> None:

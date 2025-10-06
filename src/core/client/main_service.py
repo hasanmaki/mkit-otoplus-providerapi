@@ -65,7 +65,7 @@ class NormalizedResponse:
 # ============================================================
 
 
-class HttpServiceClient:
+class HttpClientService:
     """HTTP client dengan parser berbasis content-type (Strategy Pattern)."""
 
     _content_type_parsers: dict[str, ParserFunc] = {
@@ -95,11 +95,7 @@ class HttpServiceClient:
     async def safe_request(
         self, method: str, endpoint: str, **kwargs
     ) -> dict[str, Any]:
-        """Satu pintu aman:
-        1. Lakuin request ke upstream
-        2. Normalisasi response
-        3. Return dict seragam
-        """
+        """Use this."""
         try:
             resp = await self._request(method, endpoint, **kwargs)
             normalized = self._normalize(resp)
@@ -123,7 +119,6 @@ class HttpServiceClient:
             self.log.debug(f"Issuing {method} request to {endpoint}")
             resp = await getattr(self.client, method.lower())(endpoint, **kwargs)
             resp.raise_for_status()
-            return resp
         except httpx.RequestError as exc:
             raise HTTPConnectionError(
                 message="Connection error",
@@ -136,6 +131,7 @@ class HttpServiceClient:
                 context={"endpoint": endpoint, "text": exc.response.text},
                 cause=exc,
             ) from exc
+        return resp
 
     # ------------------------------------------------------------------
     # Normalize Layer

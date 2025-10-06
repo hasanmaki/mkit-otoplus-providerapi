@@ -1,9 +1,9 @@
 import httpx
-from httpx import AsyncClient
 from loguru import logger
 
 from src.config.cfg_api_clients import ApiBaseConfig
-from src.core.client import ApiClientManager, HttpClientFactory
+from src.core.client import HttpClientManager
+from src.core.client.factory import HttpClientFactory
 
 
 async def check_url_reachable(url: str, timeout: float = 1.0) -> bool:
@@ -18,13 +18,14 @@ async def check_url_reachable(url: str, timeout: float = 1.0) -> bool:
             )
             return reachable
     except Exception as exc:
-        log.error(f"URL {url} tidak reachable: {exc}")
+        log.exception(f"URL {url} tidak reachable: {exc}")
         return False
 
 
 async def setup_client(
-    manager: ApiClientManager, name: str, config: ApiBaseConfig, timeout: float = 1.0
-) -> AsyncClient:
+    manager: HttpClientManager, name: str, config: ApiBaseConfig, timeout: float = 1.0
+) -> httpx.AsyncClient:
+    """Wrapper for easy setup client."""
     if not await check_url_reachable(str(config.base_url), timeout=timeout):
         raise RuntimeError(f"Base URL '{config.base_url}' tidak reachable")
 

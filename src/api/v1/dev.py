@@ -2,9 +2,8 @@
 from fastapi import APIRouter
 from loguru import logger
 
-from src.core.client.http_service import HttpServiceClient
-from src.core.client.request_handler import request_handler
-from src.core.client.response_handler import handle_response
+from src.core.client.main_service import HttpClientService
+from src.core.utils.client_utils import handle_response, request_handler
 from src.deps import DepDigiposApiClient, DepDigiposSettings
 from src.services.digipos.srv_commands import DigiposCommands
 
@@ -47,7 +46,7 @@ async def explore_api(
 
 @router.get("/test_digipos")
 async def test(client: DepDigiposApiClient):
-    service = HttpServiceClient(client)
+    service = HttpClientService(client)
     result = await service.safe_request(
         "GET", "balance", params={"username": "WIR6289504"}
     )
