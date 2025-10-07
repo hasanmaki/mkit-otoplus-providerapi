@@ -9,13 +9,13 @@ router = APIRouter(prefix="/test", tags=["test"])
 
 
 @router.get(
-    "/expplore",
-    summary="inject only Client Service.",
+    "/test_raw",
+    summary="testing with raw cleint and service builder.",
 )
 async def explore_api(
     client: DepDigiposApiClient,
 ):
-    """Explores API Response with httpx library."""
+    """Testing with raw cleint and service builder."""
     endpoint = "command"
     params = {"username": "WIR6289504"}
     logger.debug(f"sending request to {endpoint} with params {params}")
@@ -28,9 +28,13 @@ async def explore_api(
     return result
 
 
-@router.get("/test_digipos")
+@router.get("/test_service")
 async def test(service: DepDigiposHttpService, dgsettings: DepDigiposSettings):
-    """Injecting http service only."""
+    """Testing with injected service."""
     params = {"username": dgsettings.username}
-    result = await service.safe_request("GET", "balance", params=params)
+    debug: bool = dgsettings.debug
+    endpoint: str = "command"
+    result = await service.safe_request(
+        "GET", endpoint=endpoint, params=params, debugresponse=debug
+    )
     return result

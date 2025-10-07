@@ -62,12 +62,12 @@ class HttpClientService:
             return NormalizedResponse.error(str(resp.request.url), error=exc)
 
     async def safe_request(
-        self, method: str, endpoint: str, **kwargs
+        self, method: str, endpoint: str, debugresponse: bool = False, **kwargs
     ) -> dict[str, Any]:
         """Public Api wrapper."""
         try:
             resp = await self._request(method, endpoint, **kwargs)
-            normalized = self._normalize(resp)
+            normalized: NormalizedResponse = self._normalize(resp, debug=debugresponse)
             return normalized.to_dict()
         except Exception as exc:
             self.log.error(f"Safe request failed: {exc}")  # noqa: TRY400
