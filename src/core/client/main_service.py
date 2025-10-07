@@ -67,6 +67,9 @@ class HttpClientService:
         """Public Api wrapper."""
         try:
             resp = await self._request(method, endpoint, **kwargs)
+            if debugresponse:
+                response_preview = resp.text[:1000]
+                self.log.debug(f"Response preview: {response_preview}")
             normalized: NormalizedResponse = self._normalize(resp, debug=debugresponse)
             return normalized.to_dict()
         except Exception as exc:
