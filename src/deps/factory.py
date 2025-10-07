@@ -1,9 +1,9 @@
+# ruff :noqa
 from typing import Annotated
 
 from fastapi import Depends, Request
 from httpx import AsyncClient
 
-from services.clients.manager import ApiClientManager
 from src.config.settings import AppSettings
 from src.core.client import HttpClientManager, HttpClientService
 
@@ -21,7 +21,7 @@ def get_api_manager(request: Request) -> HttpClientManager:
     return request.app.state.api_manager
 
 
-DepApiManager = Annotated[ApiClientManager, Depends(get_api_manager)]
+DepApiManager = Annotated[HttpClientManager, Depends(get_api_manager)]
 
 
 def client_factory(config_getter):
@@ -29,7 +29,7 @@ def client_factory(config_getter):
 
     async def _dep(
         settings: AppSettings = Depends(get_appsettings),
-        manager: ApiClientManager = Depends(get_api_manager),
+        manager: HttpClientManager = Depends(get_api_manager),
     ) -> AsyncClient:
         config = config_getter(settings)
         return manager.get_client(config.name)

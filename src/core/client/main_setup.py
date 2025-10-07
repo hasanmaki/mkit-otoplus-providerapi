@@ -1,9 +1,9 @@
 import httpx
 from loguru import logger
 
+from core.client.base_factory import HttpClientFactory
 from src.config.cfg_api_clients import ApiBaseConfig
 from src.core.client import HttpClientManager
-from src.core.client.factory import HttpClientFactory
 
 
 async def check_url_reachable(url: str, timeout: float | None = 1.0) -> bool:
