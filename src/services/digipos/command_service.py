@@ -2,7 +2,7 @@
 
 from src.config.settings import DigiposConfig
 from src.core.client import HttpClientService
-from src.schemas.sch_digipos import DGReqUsername, DGReqUsnPass
+from src.schemas.sch_digipos import DGReqUsername, DGReqUsnOtp, DGReqUsnPass
 from src.services.digipos.auth_service import DigiposAuthService
 
 
@@ -23,12 +23,39 @@ class DGCommandServices:
             "GET", endpoint, params=params, debugresponse=self.debug
         )
 
+    async def login(self, data: DGReqUsnPass):
+        """Ambil login dari Digipos API."""
+        self.auth_service.validate_usnpass(data.username, data.password)
+        return await self._short_call(self.setting.endpoints.login, data.model_dump())
+
+    async def verify_otp(self, data: DGReqUsnOtp):
+        """Ambil verify OTP dari Digipos API."""
+        self.auth_service.validate_username(data.username)
+        return await self._short_call(
+            self.setting.endpoints.verify_otp, data.model_dump()
+        )
+
     async def balance(self, data: DGReqUsername):
         """Ambil Balance Dari Digipos API."""
         self.auth_service.validate_username(data.username)
         return await self._short_call(self.setting.endpoints.balance, data.model_dump())
 
-    async def login(self, data: DGReqUsnPass):
-        """Ambil login dari Digipos API."""
-        self.auth_service.validate_usnpass(data.username, data.password)
-        return await self._short_call(self.setting.endpoints.login, data.model_dump())
+    async def profile(self, data: DGReqUsername):
+        self.auth_service.validate_username(data.username)
+        return await self._short_call(self.setting.endpoints.profile, data.model_dump())
+
+    async def list_va(self, data: DGReqUsername):
+        self.auth_service.validate_username(data.username)
+        return await self._short_call(self.setting.endpoints.list_va, data.model_dump())
+
+    async def reward(self, data: DGReqUsername):
+        self.auth_service.validate_username(data.username)
+        return await self._short_call(self.setting.endpoints.reward, data.model_dump())
+
+    async def banner(self, data: DGReqUsername):
+        self.auth_service.validate_username(data.username)
+        return await self._short_call(self.setting.endpoints.banner, data.model_dump())
+
+    async def logout(self, data: DGReqUsername):
+        self.auth_service.validate_username(data.username)
+        return await self._short_call(self.setting.endpoints.logout, data.model_dump())

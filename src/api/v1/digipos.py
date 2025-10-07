@@ -4,8 +4,6 @@ from fastapi import APIRouter, Depends, Query
 
 from deps.digipos import (
     DepDigiposCommandService,
-    DepDigiposHttpService,
-    DepDigiposSettings,
 )
 from schemas.sch_digipos import DGReqUsername, DGReqUsnOtp, DGReqUsnPass
 
@@ -16,22 +14,13 @@ router = APIRouter(prefix="/digipos", tags=["digipos"])
     path="/login",
     summary="Forward login command to Digipos API",
 )
-async def login(
+async def get_login(
     query: Annotated[DGReqUsnPass, Depends()],
-    http_service: DepDigiposHttpService,
-    settings: DepDigiposSettings,
+    service: DepDigiposCommandService,
 ):
     """Get login ke digipos Account API."""
-    params = {"username": query.username}
-    if query.username != settings.username:
-        raise ValueError("Username tidak sesuai dengan yang terdaftar")
-    if query.password != settings.password:
-        raise ValueError("Password tidak sesuai dengan yang terdaftar")
-    endpoint = settings.endpoints.login
-    debugresponse = settings.debug
-    response_model = await http_service.safe_request(
-        "GET", endpoint=endpoint, params=params, debugresponse=debugresponse
-    )
+    response_model = await service.login(query)
+
     return response_model
 
 
@@ -39,20 +28,13 @@ async def login(
     path="/verify_otp",
     summary="Forward verify OTP command to Digipos API",
 )
-async def verify_otp(
+async def get_verify_otp(
     query: Annotated[DGReqUsnOtp, Depends()],
-    http_service: DepDigiposHttpService,
-    settings: DepDigiposSettings,
+    service: DepDigiposCommandService,
 ):
     """Get verify OTP ke digipos Account API."""
-    params = {"username": query.username}
-    if query.username != settings.username:
-        raise ValueError("Username tidak sesuai dengan yang terdaftar")
-    endpoint = settings.endpoints.verify_otp
-    debugresponse = settings.debug
-    response_model = await http_service.safe_request(
-        "GET", endpoint=endpoint, params=params, debugresponse=debugresponse
-    )
+    response_model = await service.verify_otp(query)
+
     return response_model
 
 
@@ -61,14 +43,11 @@ async def verify_otp(
     summary="Forward Balance command to Digipos API",
     response_model=None,
 )
-async def balance(
+async def get_balance(
     query: Annotated[DGReqUsername, Query()],
-    service: DepDigiposCommandService,  # Ganti definisi dependensi di sini
+    service: DepDigiposCommandService,
 ):
-    """Keterangan: Di sini, FastAPI akan mengenali DepDigiposCommandService.
-
-    sebagai tipe dependensi *tanpa* mengeksposnya sebagai parameter permintaan.
-    """
+    """Forward `get` balance ke Account Digipos API."""
     response_model = await service.balance(query)
     return response_model
 
@@ -77,71 +56,70 @@ async def balance(
     path="/profile",
     summary="Forward profile command to Digipos API",
 )
-async def profile(
+async def get_profile(
     query: Annotated[DGReqUsername, Depends()],
-    http_service: DepDigiposHttpService,
-    settings: DepDigiposSettings,
+    service: DepDigiposCommandService,
 ):
     """Ambil profile dari Digipos API."""
-    params = {"username": query.username}
-    if query.username != settings.username:
-        raise ValueError("Username tidak sesuai dengan yang terdaftar")
-    endpoint = settings.endpoints.profile
-    debugresponse = settings.debug
-    response_model = await http_service.safe_request(
-        "GET", endpoint=endpoint, params=params, debugresponse=debugresponse
-    )
+    response_model = await service.profile(query)
+
     return response_model
 
 
-# @router.get(
-#     path="/list_va",
-#     summary="Forward list_va command to Digipos API",
-#     response_class=PlainTextResponse,
-# )
-# async def list_va(
-#     service: ServiceDigiposAccount = Depends(get_digipos_account_service),
-# ):
-#     """Ambil list_va dari Digipos API."""
-#     response_model = await service.list_va()
-#     return response_model
+@router.get(
+    path="/list_va",
+    summary="Forward list_va command to Digipos API",
+)
+async def get_list_va(
+    query: Annotated[DGReqUsername, Depends()],
+    service: DepDigiposCommandService,
+):
+    """Ambil list_va dari Digipos API."""
+    response_model = await service.list_va(query)
+
+    return response_model
 
 
-# @router.get(
-#     path="/rewardsummary",
-#     summary="Forward rewardsummary command to Digipos API",
-#     response_class=PlainTextResponse,
-# )
-# async def get_reward(
-#     service: ServiceDigiposAccount = Depends(get_digipos_account_service),
-# ):
-#     """Ambil rewardsummary dari Digipos API."""
-#     response_model = await service.reward()
-#     return response_model
+@router.get(
+    path="/reward",
+    summary="Forward reward command to Digipos API",
+)
+async def get_reward(
+    query: Annotated[DGReqUsername, Depends()],
+    service: DepDigiposCommandService,
+):
+    """Ambil reward dari Digipos API."""
+    response_model = await service.reward(query)
+
+    return response_model
 
 
-# @router.get(
-#     path="/banner",
-#     summary="Forward banner command to Digipos API",
-#     response_class=PlainTextResponse,
-# )
-# async def get_banner(
-#     service: ServiceDigiposAccount = Depends(get_digipos_account_service),
-# ):
-#     """Ambil banner dari Digipos API."""
-#     response_model = await service.banner()
-#     return response_model
+@router.get(
+    path="/banner",
+    summary="Forward banner command to Digipos API",
+)
+async def get_banner(
+    query: Annotated[DGReqUsername, Depends()],
+    service: DepDigiposCommandService,
+):
+    """Ambil banner dari Digipos API."""
+    response_model = await service.banner(query)
+
+    return response_model
 
 
-# @router.get(
-#     path="/logout",
-#     summary="Forward logout command to Digipos API",
-#     response_class=PlainTextResponse,
-# )
-# async def logout(service: ServiceDigiposAccount = Depends(get_digipos_account_service)):
-#     """Logout dari Digipos API."""
-#     response_model = await service.logout()
-#     return response_model
+@router.get(
+    path="/logout",
+    summary="Forward logout command to Digipos API",
+)
+async def get_logout(
+    query: Annotated[DGReqUsername, Depends()],
+    service: DepDigiposCommandService,
+):
+    """Logout dari Digipos API."""
+    response_model = await service.logout(query)
+
+    return response_model
 
 
 # @router.get(
