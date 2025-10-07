@@ -21,6 +21,7 @@ class ClientLimits(BaseModel):
 
 
 class ApiBaseConfig(BaseModel):
+    name: str
     base_url: HttpUrl
     headers: dict[str, str] = Field(default_headers)
     timeout: int = 10

@@ -6,7 +6,7 @@ from src.core.client import HttpClientManager
 from src.core.client.factory import HttpClientFactory
 
 
-async def check_url_reachable(url: str, timeout: float = 1.0) -> bool:
+async def check_url_reachable(url: str, timeout: float | None = 1.0) -> bool:
     """Cek apakah base_url reachable tanpa ngeblok service."""
     log = logger.bind(service="URLValidator")
     try:
@@ -23,12 +23,14 @@ async def check_url_reachable(url: str, timeout: float = 1.0) -> bool:
 
 
 async def setup_client(
-    manager: HttpClientManager, name: str, config: ApiBaseConfig, timeout: float = 1.0
+    manager: HttpClientManager, config: ApiBaseConfig
 ) -> httpx.AsyncClient:
-    """Wrapper for easy setup client."""
-    if not await check_url_reachable(str(config.base_url), timeout=timeout):
+    """Setup client dari config dan register ke manager."""
+    log = logger.bind(service=config.name)
+    if not await check_url_reachable(str(config.base_url)):
         raise RuntimeError(f"Base URL '{config.base_url}' tidak reachable")
 
     client = HttpClientFactory.create_client(config)
-    manager.register_client(name, client)
+    manager.register_client(config.name, client)
+    log.success(f"Client '{config.name}' initialized with base={config.base_url}")
     return client

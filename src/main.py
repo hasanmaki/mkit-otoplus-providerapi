@@ -14,17 +14,15 @@ from src.custom.middlewares import LoggingMiddleware
 
 setup_logging()
 
-settings = get_settings()
-
 
 # lifespan
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Lifespan manager."""
     logger.debug("Application startup")
-
+    settings = get_settings()
     client_manager = HttpClientManager()
-    await setup_client(client_manager, "digipos", settings.digipos)
+    await setup_client(client_manager, settings.digipos)
     # add more client here
 
     app.state.settings = settings

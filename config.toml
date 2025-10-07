@@ -1,9 +1,0 @@
-[digipos]
-# debug flag spesifik
-debug = true
-# base url
-base_url = "http://10.0.0.3:10003/"
-# credential
-username = "WIR6289504"
-password = "yourpassword"
-pin = "yourpin"

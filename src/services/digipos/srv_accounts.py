@@ -1,5 +1,5 @@
 # src/services/digipos/service_account.py
-from typing import Any, Dict
+from typing import Any
 
 import httpx
 from loguru import logger
@@ -21,21 +21,21 @@ class ServiceDigiposAccount(BaseApiClient):
         self.config = config
         self.log = logger.bind(service="digipos_account")
 
-    async def get_balance(self) -> str | Dict[str, Any]:
+    async def get_balance(self) -> str | dict[str, Any]:
         params = {"username": self.config.username}
         data = await self._call_and_normalize(
             method="GET", endpoint=self.config.endpoints.balance, params=params
         )
         return encode_response_upstream(data)
 
-    async def get_profile(self) -> str | Dict[str, Any]:
+    async def get_profile(self) -> str | dict[str, Any]:
         params = {"username": self.config.username}
         data = await self._call_and_normalize(
             method="GET", endpoint=self.config.endpoints.profile, params=params
         )
         return encode_response_upstream(data)
 
-    async def login(self) -> str | Dict[str, Any]:
+    async def login(self) -> str | dict[str, Any]:
         params = {
             "username": self.config.username,
             "password": self.config.password,
@@ -45,7 +45,7 @@ class ServiceDigiposAccount(BaseApiClient):
         )
         return encode_response_upstream(data)
 
-    async def verify_otp(self, otp: str) -> str | Dict[str, Any]:
+    async def verify_otp(self, otp: str) -> str | dict[str, Any]:
         params = {
             "username": self.config.username,
             "otp": otp,
@@ -55,28 +55,28 @@ class ServiceDigiposAccount(BaseApiClient):
         )
         return encode_response_upstream(data)
 
-    async def logout(self) -> str | Dict[str, Any]:
+    async def logout(self) -> str | dict[str, Any]:
         params = {"username": self.config.username}
         data = await self._call_and_normalize(
             method="GET", endpoint=self.config.endpoints.logout, params=params
         )
         return encode_response_upstream(data)
 
-    async def list_va(self) -> str | Dict[str, Any]:
+    async def list_va(self) -> str | dict[str, Any]:
         params = {"username": self.config.username}
         data = await self._call_and_normalize(
             method="GET", endpoint=self.config.endpoints.list_va, params=params
         )
         return encode_response_upstream(data)
 
-    async def reward(self) -> str | Dict[str, Any]:
+    async def reward(self) -> str | dict[str, Any]:
         params = {"username": self.config.username}
         data = await self._call_and_normalize(
             method="GET", endpoint=self.config.endpoints.reward, params=params
         )
         return encode_response_upstream(data)
 
-    async def banner(self) -> str | Dict[str, Any]:
+    async def banner(self) -> str | dict[str, Any]:
         params = {"username": self.config.username}
         data = await self._call_and_normalize(
             method="GET", endpoint=self.config.endpoints.banner, params=params

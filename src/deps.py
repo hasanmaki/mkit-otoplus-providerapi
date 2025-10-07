@@ -5,59 +5,72 @@ from httpx import AsyncClient
 
 from src.config.cfg_api_clients import DigiposConfig
 from src.config.settings import AppSettings
+from src.core.client import HttpClientService
 from src.services.clients.manager import ApiClientManager
-from src.services.digipos.srv_accounts import ServiceDigiposAccount
+
+# --- base dependencies ---
 
 
 async def get_appsettings(request: Request) -> AppSettings:
-    """dependency to get app settings."""
+    """Ambil AppSettings dari state FastAPI."""
     return request.app.state.settings
 
 
 DepAppSettings = Annotated[AppSettings, Depends(get_appsettings)]
 
 
-async def get_app_digipos_settings(
-    settings: AppSettings = Depends(get_appsettings),
-) -> DigiposConfig:
-    return settings.digipos
-
-
-DepDigiposSettings = Annotated[DigiposConfig, Depends(get_app_digipos_settings)]
-
-
 def get_api_manager(request: Request) -> ApiClientManager:
-    """dependency to get api manager.
-
-    get the client manager from app state."""
+    """Ambil ApiClientManager dari app state."""
     return request.app.state.api_manager
 
 
-# async def get_digipos_client(
-#     manager: ApiClientManager = Depends(get_api_manager),
-# ) -> AsyncClient:
-#     """get digipos client from api manager.(api manager is from app state)"""
-#     return manager.get_client("digipos")
+DepApiManager = Annotated[ApiClientManager, Depends(get_api_manager)]
 
 
-# DepDigiposApiClient = Annotated[AsyncClient, Depends(get_digipos_client)]
+# --- factories ---
 
 
-# Opsional pattern
-def get_client_dependency(name: str):
-    async def _dep(manager: ApiClientManager = Depends(get_api_manager)) -> AsyncClient:
-        return manager.get_client(name)
+def client_factory(config_getter):
+    """Factory untuk generate AsyncClient dari AppSettings."""
+
+    async def _dep(
+        settings: AppSettings = Depends(get_appsettings),
+        manager: ApiClientManager = Depends(get_api_manager),
+    ) -> AsyncClient:
+        config = config_getter(settings)
+        return manager.get_client(config.name)
 
     return _dep
 
 
-DepDigiposApiClient = Annotated[AsyncClient, Depends(get_client_dependency("digipos"))]
-# DepIsimpleApiClient = Annotated[AsyncClient, Depends(get_client_dependency("isimple"))]
+def http_service_factory(config_getter):
+    """Factory untuk generate HttpClientService dari AppSettings."""
+
+    async def _dep(
+        client: AsyncClient = Depends(client_factory(config_getter)),
+        settings: AppSettings = Depends(get_appsettings),
+    ) -> HttpClientService:
+        config = config_getter(settings)
+        return HttpClientService(client, config.name)
+
+    return _dep
 
 
-async def get_digipos_account_service(
-    digipos_client: DepDigiposApiClient,
-    appsettings: DepAppSettings,
-    digipos_settings: DepDigiposSettings,
-) -> ServiceDigiposAccount:
-    return ServiceDigiposAccount(client=digipos_client, config=digipos_settings)
+# --- specific digipos ---
+
+
+def get_digipos_config(settings: AppSettings) -> DigiposConfig:
+    return settings.digipos
+
+
+DepDigiposSettings = Annotated[
+    DigiposConfig, Depends(lambda s=Depends(get_appsettings): s.digipos)
+]
+
+DepDigiposApiClient = Annotated[
+    AsyncClient, Depends(client_factory(lambda s: s.digipos))
+]
+
+DepDigiposHttpService = Annotated[
+    HttpClientService, Depends(http_service_factory(lambda s: s.digipos))
+]

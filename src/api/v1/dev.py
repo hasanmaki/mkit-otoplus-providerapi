@@ -45,7 +45,9 @@ async def explore_api(
 
 
 @router.get("/test_digipos")
-async def test(client: DepDigiposApiClient):
+async def test(
+    client: DepDigiposApiClient,
+):
     service = HttpClientService(client)
     result = await service.safe_request(
         "GET", "balance", params={"username": "WIR6289504"}
