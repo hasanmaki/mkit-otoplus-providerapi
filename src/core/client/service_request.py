@@ -15,8 +15,11 @@ class HttpClientService:
     async def _request(self, method: str, endpoint: str, **kwargs) -> httpx.Response:
         """Low level request."""
         method = method.upper()
-        if method not in ["GET", "POST"]:
+        if method not in [
+            "GET",
+        ]:
             raise ValueError(f"Invalid HTTP method: {method}")
+
         try:
             self.log.debug(f"Issuing request: [{method}] to endpoint: [{endpoint}]")
             resp = await getattr(self.client, method.lower())(endpoint, **kwargs)

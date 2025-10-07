@@ -3,7 +3,6 @@ from pydantic import BaseModel, Field, HttpUrl
 default_headers = {
     "User-Agent": "MKIT-Trimmer-API/1.0",
     "Accept": "application/json",
-    "Content-Type": "application/json",
 }
 
 
