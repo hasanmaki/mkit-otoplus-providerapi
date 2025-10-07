@@ -5,9 +5,9 @@ from typing import Annotated
 
 from fastapi import Depends, HTTPException
 
+from core.auth.sch_transaction import TrxAuthPayload
+from core.auth.srv_signature import OtomaxSignatureService
 from src.config.settings import AppSettings
-from src.core.sch_transaction import TrxAuthPayload
-from src.core.srv_signature import OtomaxSignatureService
 from src.deps import get_app_settings, get_client_ip
 
 

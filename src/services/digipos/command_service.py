@@ -3,8 +3,8 @@
 from loguru import logger
 
 from core.client.service_parser import response_to_dict
+from core.client.service_request import HttpClientService
 from src.config.settings import DigiposConfig
-from src.core.client.service_request import HttpClientService
 from src.schemas.sch_digipos import (
     DGReqSimStatus,
     DGReqUsername,
