@@ -1,9 +1,9 @@
+from src.config.settings import DigiposConfig
 from src.custom.exceptions import AuthenticationError
-from src.deps import DepDigiposSettings
 
 
 class DigiposAuthService:
-    def __init__(self, setting: DepDigiposSettings):
+    def __init__(self, setting: DigiposConfig):
         self.setting = setting
 
     def validate_username(self, username: str):

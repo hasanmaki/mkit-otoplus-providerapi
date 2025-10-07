@@ -1,9 +1,9 @@
 """dsini hanya bertugas menentukan endpoint, dan internal bussines logic, masalah parse dan lain lain di lakukan di taempat lain."""
 
-from schemas.sch_digipos import DGReqUsername, DGReqUsnPass
-from services.digipos.auth_service import DigiposAuthService
+from src.config.settings import DigiposConfig
 from src.core.client import HttpClientService
-from src.deps import DepDigiposSettings
+from src.schemas.sch_digipos import DGReqUsername, DGReqUsnPass
+from src.services.digipos.auth_service import DigiposAuthService
 
 
 class DGCommandServices:
@@ -11,7 +11,7 @@ class DGCommandServices:
         self,
         http_service: HttpClientService,
         auth_service: DigiposAuthService,
-        setting: DepDigiposSettings,
+        setting: DigiposConfig,
     ):
         self.http_service = http_service
         self.auth_service = auth_service

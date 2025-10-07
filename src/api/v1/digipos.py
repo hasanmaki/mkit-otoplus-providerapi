@@ -1,10 +1,13 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
 
-from deps.digipos import DepDigiposHttpService, DepDigiposSettings
+from deps.digipos import (
+    DepDigiposCommandService,
+    DepDigiposHttpService,
+    DepDigiposSettings,
+)
 from schemas.sch_digipos import DGReqUsername, DGReqUsnOtp, DGReqUsnPass
-from services.digipos.account_service import DGCommandServices
 
 router = APIRouter(prefix="/digipos", tags=["digipos"])
 
@@ -33,7 +36,7 @@ async def login(
 
 
 @router.get(
-    "/verify_otp",
+    path="/verify_otp",
     summary="Forward verify OTP command to Digipos API",
 )
 async def verify_otp(
@@ -56,16 +59,17 @@ async def verify_otp(
 @router.get(
     "/balance",
     summary="Forward Balance command to Digipos API",
+    response_model=None,
 )
 async def balance(
-    query: Annotated[DGReqUsername, Depends()],
-    http_service: DepDigiposHttpService,
-    settings: DepDigiposSettings,
+    query: Annotated[DGReqUsername, Query()],
+    service: DepDigiposCommandService,  # Ganti definisi dependensi di sini
 ):
-    """Get verify OTP ke digipos Account API."""
-    service = DGCommandServices(http_service, settings)
-    response_model = await service.balance(query)
+    """Keterangan: Di sini, FastAPI akan mengenali DepDigiposCommandService.
 
+    sebagai tipe dependensi *tanpa* mengeksposnya sebagai parameter permintaan.
+    """
+    response_model = await service.balance(query)
     return response_model
 
 
