@@ -7,7 +7,10 @@ from deps.digipos import (
 )
 from schemas.sch_digipos import DGReqUsername, DGReqUsnOtp, DGReqUsnPass
 
-router = APIRouter(prefix="/digipos", tags=["digipos"])
+router = APIRouter(
+    prefix="/digipos",
+    tags=["digipos"],
+)
 
 
 @router.get(
@@ -118,6 +121,20 @@ async def get_logout(
 ):
     """Logout dari Digipos API."""
     response_model = await service.logout(query)
+
+    return response_model
+
+
+@router.get(
+    path="/sim_status",
+    summary="Forward sim_status command to Digipos API",
+)
+async def get_sim_status(
+    query: Annotated[DGReqUsername, Depends()],
+    service: DepDigiposCommandService,
+):
+    """Ambil sim_status dari Digipos API."""
+    response_model = await service.sim_status(query)
 
     return response_model
 

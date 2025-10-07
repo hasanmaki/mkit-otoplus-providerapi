@@ -59,3 +59,10 @@ class DGCommandServices:
     async def logout(self, data: DGReqUsername):
         self.auth_service.validate_username(data.username)
         return await self._short_call(self.setting.endpoints.logout, data.model_dump())
+
+    # utils methode
+    async def sim_status(self, data: DGReqUsername):
+        self.auth_service.validate_username(data.username)
+        return await self._short_call(
+            self.setting.endpoints.sim_status, data.model_dump()
+        )
