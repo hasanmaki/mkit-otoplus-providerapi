@@ -21,6 +21,6 @@ class DGReqSimStatus(DGReqUsername):
 
 
 class DGResBalance(BaseModel):
-    ngrs: dict[str, str]
+    ngrrs: dict[str, str]
     linkaja: str
     finpay: str

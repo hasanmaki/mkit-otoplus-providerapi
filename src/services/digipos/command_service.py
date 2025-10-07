@@ -1,6 +1,7 @@
 """bussines logic for digipos."""
 
 from loguru import logger
+from pydantic import ValidationError
 
 from core.client.service_parser import response_to_dict
 from core.client.service_request import HttpClientService
@@ -10,6 +11,7 @@ from src.schemas.sch_digipos import (
     DGReqUsername,
     DGReqUsnOtp,
     DGReqUsnPass,
+    DGResBalance,
 )
 from src.services.digipos.auth_service import DigiposAuthService
 
@@ -58,9 +60,32 @@ class DGCommandServices:
             endpoint=self.setting.endpoints.balance,
             params=data.model_dump(),
         )
-        dict_response = response_to_dict(raw_response, debugresponse=data.debug)
 
-        return dict_response
+        dict_response = response_to_dict(raw_response, debugresponse=data.debug)
+        meta = dict_response["meta"]
+        body = dict_response.get("data")
+
+        # --- CASE 1: body_type == DICT ---
+        if meta["body_type"] == "DICT":
+            try:
+                parsed_data = DGResBalance(**body).model_dump()  # type: ignore
+                parsed_status = "OK"
+            except ValidationError as exc:
+                logger.error(f"[Balance] Validation failed: {exc}")
+                parsed_data = body  # fallback raw
+                parsed_status = "ERROR"
+
+        # --- CASE 2: Non-DICT ---
+        else:
+            parsed_data = body
+            parsed_status = "SKIPPED"
+
+        # --- Encode jadi plaintext (urlencoded style) ---
+        encoded_data = str(parsed_data)
+
+        final_response = f"status_code={meta['status_code']}&parsed={parsed_status}&data={encoded_data}"
+
+        return final_response
 
     async def profile(self, data: DGReqUsername):
         self.auth_service.validate_username(data.username)
