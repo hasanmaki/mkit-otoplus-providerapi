@@ -13,3 +13,7 @@ class DGReqUsnPass(DGReqUsername):
 
 class DGReqUsnOtp(DGReqUsername):
     otp: str
+
+
+class DGReqSimStatus(DGReqUsername):
+    to: str

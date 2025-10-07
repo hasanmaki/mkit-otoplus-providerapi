@@ -11,6 +11,7 @@ from src.config.settings import get_settings
 from src.core.client import HttpClientManager, setup_client
 from src.custom.exceptions import AppExceptionError
 from src.custom.middlewares import LoggingMiddleware
+from src.tag import tags_metadata
 
 setup_logging()
 
@@ -39,7 +40,11 @@ async def lifespan(app: FastAPI):
     logger.debug("Application shutdown")
 
 
-app = FastAPI(lifespan=lifespan)
+app = FastAPI(
+    lifespan=lifespan,
+    openapi_tags=tags_metadata,
+    swagger_ui_parameters={"docExpansion": "none"},
+)
 
 # register middleware
 app.add_middleware(LoggingMiddleware)

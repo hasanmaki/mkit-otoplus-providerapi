@@ -2,7 +2,12 @@
 
 from src.config.settings import DigiposConfig
 from src.core.client import HttpClientService
-from src.schemas.sch_digipos import DGReqUsername, DGReqUsnOtp, DGReqUsnPass
+from src.schemas.sch_digipos import (
+    DGReqSimStatus,
+    DGReqUsername,
+    DGReqUsnOtp,
+    DGReqUsnPass,
+)
 from src.services.digipos.auth_service import DigiposAuthService
 
 
@@ -61,7 +66,7 @@ class DGCommandServices:
         return await self._short_call(self.setting.endpoints.logout, data.model_dump())
 
     # utils methode
-    async def sim_status(self, data: DGReqUsername):
+    async def sim_status(self, data: DGReqSimStatus):
         self.auth_service.validate_username(data.username)
         return await self._short_call(
             self.setting.endpoints.sim_status, data.model_dump()
