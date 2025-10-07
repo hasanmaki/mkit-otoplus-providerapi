@@ -2,31 +2,15 @@
 from fastapi import APIRouter
 from loguru import logger
 
-from deps.digipos import DepDigiposApiClient, DepDigiposSettings
-from src.core.client.main_service import HttpClientService
+from deps.digipos import DepDigiposApiClient, DepDigiposHttpService, DepDigiposSettings
 from src.core.utils.client_utils import handle_response, request_handler
-from src.services.digipos.srv_commands import DigiposCommands
 
 router = APIRouter(prefix="/test", tags=["test"])
 
 
 @router.get(
-    "/get_api",
-    summary="just an explore (Reliable Content Check)",
-)
-async def test_api(
-    client: DepDigiposApiClient,
-    config: DepDigiposSettings,
-):
-    """Explores API calls and reliably checks content type."""
-    commands = DigiposCommands(config)
-    response_obj = await commands.get_balance(client)
-    return response_obj.to_ready_dict()
-
-
-@router.get(
     "/expplore",
-    summary="exploring the apis",
+    summary="inject only Client Service.",
 )
 async def explore_api(
     client: DepDigiposApiClient,
@@ -45,11 +29,8 @@ async def explore_api(
 
 
 @router.get("/test_digipos")
-async def test(
-    client: DepDigiposApiClient,
-):
-    service = HttpClientService(client)
-    result = await service.safe_request(
-        "GET", "balance", params={"username": "WIR6289504"}
-    )
+async def test(service: DepDigiposHttpService, dgsettings: DepDigiposSettings):
+    """Injecting http service only."""
+    params = {"username": dgsettings.username}
+    result = await service.safe_request("GET", "balance", params=params)
     return result
