@@ -107,7 +107,6 @@ def _get_meta(resp: httpx.Response) -> dict[str, Any]:
 # --- Main Conversion Function ---
 
 
-@timeit
 def response_to_dict(
     resp: httpx.Response, debugresponse: bool = False
 ) -> dict[str, Any]:

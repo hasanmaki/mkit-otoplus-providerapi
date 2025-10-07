@@ -1,4 +1,4 @@
-"""dsini hanya bertugas menentukan endpoint, dan internal bussines logic, masalah parse dan lain lain di lakukan di taempat lain."""
+"""bussines logic for digipos."""
 
 from loguru import logger
 
@@ -24,58 +24,101 @@ class DGCommandServices:
         self.http_service = http_service
         self.auth_service = auth_service
         self.setting = setting
-        self.debug = setting.debug
         self.logger = logger.bind(service="Digipos Command Service")
-
-    async def _short_call(self, endpoint: str, params: dict):
-        raw_response = await self.http_service.safe_request(
-            method="GET",
-            endpoint=endpoint,
-            params=params,
-        )
-
-        return response_to_dict(raw_response, debugresponse=self.debug)
 
     async def login(self, data: DGReqUsnPass):
         """Ambil login dari Digipos API."""
         self.auth_service.validate_usnpass(data.username, data.password)
-        return await self._short_call(self.setting.endpoints.login, data.model_dump())
+        raw_response = await self.http_service.safe_request(
+            method="GET",
+            endpoint=self.setting.endpoints.login,
+            params=data.model_dump(),
+        )
+        dict_response = response_to_dict(raw_response)
+
+        return dict_response
 
     async def verify_otp(self, data: DGReqUsnOtp):
         """Ambil verify OTP dari Digipos API."""
         self.auth_service.validate_username(data.username)
-        return await self._short_call(
-            self.setting.endpoints.verify_otp, data.model_dump()
+        raw_response = await self.http_service.safe_request(
+            method="GET",
+            endpoint=self.setting.endpoints.verify_otp,
+            params=data.model_dump(),
         )
+        dict_response = response_to_dict(raw_response)
+
+        return dict_response
 
     async def balance(self, data: DGReqUsername):
         """Ambil Balance Dari Digipos API."""
         self.auth_service.validate_username(data.username)
-        return await self._short_call(self.setting.endpoints.balance, data.model_dump())
+        raw_response = await self.http_service.safe_request(
+            method="GET",
+            endpoint=self.setting.endpoints.balance,
+            params=data.model_dump(),
+        )
+        dict_response = response_to_dict(raw_response)
+
+        return dict_response
 
     async def profile(self, data: DGReqUsername):
         self.auth_service.validate_username(data.username)
-        return await self._short_call(self.setting.endpoints.profile, data.model_dump())
+        raw_response = await self.http_service.safe_request(
+            method="GET",
+            endpoint=self.setting.endpoints.profile,
+            params=data.model_dump(),
+        )
+        dict_response = response_to_dict(raw_response)
+        return dict_response
 
     async def list_va(self, data: DGReqUsername):
         self.auth_service.validate_username(data.username)
-        return await self._short_call(self.setting.endpoints.list_va, data.model_dump())
+        raw_response = await self.http_service.safe_request(
+            method="GET",
+            endpoint=self.setting.endpoints.list_va,
+            params=data.model_dump(),
+        )
+        dict_response = response_to_dict(raw_response)
+        return dict_response
 
     async def reward(self, data: DGReqUsername):
         self.auth_service.validate_username(data.username)
-        return await self._short_call(self.setting.endpoints.reward, data.model_dump())
+        raw_response = await self.http_service.safe_request(
+            method="GET",
+            endpoint=self.setting.endpoints.reward,
+            params=data.model_dump(),
+        )
+        dict_response = response_to_dict(raw_response)
+        return dict_response
 
     async def banner(self, data: DGReqUsername):
         self.auth_service.validate_username(data.username)
-        return await self._short_call(self.setting.endpoints.banner, data.model_dump())
+        raw_response = await self.http_service.safe_request(
+            method="GET",
+            endpoint=self.setting.endpoints.banner,
+            params=data.model_dump(),
+        )
+        dict_response = response_to_dict(raw_response)
+        return dict_response
 
     async def logout(self, data: DGReqUsername):
         self.auth_service.validate_username(data.username)
-        return await self._short_call(self.setting.endpoints.logout, data.model_dump())
+        raw_response = await self.http_service.safe_request(
+            method="GET",
+            endpoint=self.setting.endpoints.logout,
+            params=data.model_dump(),
+        )
+        dict_response = response_to_dict(raw_response)
+        return dict_response
 
     # utils methode
     async def sim_status(self, data: DGReqSimStatus):
         self.auth_service.validate_username(data.username)
-        return await self._short_call(
-            self.setting.endpoints.sim_status, data.model_dump()
+        raw_response = await self.http_service.safe_request(
+            method="GET",
+            endpoint=self.setting.endpoints.sim_status,
+            params=data.model_dump(),
         )
+        dict_response = response_to_dict(raw_response)
+        return dict_response

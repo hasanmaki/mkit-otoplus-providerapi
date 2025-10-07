@@ -1,10 +1,11 @@
 """schmeas for digipos."""
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class DGReqUsername(BaseModel):
     username: str
+    debug: bool = Field(default=False)
 
 
 class DGReqUsnPass(DGReqUsername):
