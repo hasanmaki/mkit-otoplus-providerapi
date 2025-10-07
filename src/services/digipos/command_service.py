@@ -34,7 +34,7 @@ class DGCommandServices:
             endpoint=self.setting.endpoints.login,
             params=data.model_dump(),
         )
-        dict_response = response_to_dict(raw_response)
+        dict_response = response_to_dict(raw_response, debugresponse=data.debug)
 
         return dict_response
 
@@ -46,7 +46,7 @@ class DGCommandServices:
             endpoint=self.setting.endpoints.verify_otp,
             params=data.model_dump(),
         )
-        dict_response = response_to_dict(raw_response)
+        dict_response = response_to_dict(raw_response, debugresponse=data.debug)
 
         return dict_response
 
@@ -58,7 +58,7 @@ class DGCommandServices:
             endpoint=self.setting.endpoints.balance,
             params=data.model_dump(),
         )
-        dict_response = response_to_dict(raw_response)
+        dict_response = response_to_dict(raw_response, debugresponse=data.debug)
 
         return dict_response
 
@@ -69,7 +69,7 @@ class DGCommandServices:
             endpoint=self.setting.endpoints.profile,
             params=data.model_dump(),
         )
-        dict_response = response_to_dict(raw_response)
+        dict_response = response_to_dict(raw_response, debugresponse=data.debug)
         return dict_response
 
     async def list_va(self, data: DGReqUsername):
@@ -79,7 +79,7 @@ class DGCommandServices:
             endpoint=self.setting.endpoints.list_va,
             params=data.model_dump(),
         )
-        dict_response = response_to_dict(raw_response)
+        dict_response = response_to_dict(raw_response, debugresponse=data.debug)
         return dict_response
 
     async def reward(self, data: DGReqUsername):
@@ -89,7 +89,7 @@ class DGCommandServices:
             endpoint=self.setting.endpoints.reward,
             params=data.model_dump(),
         )
-        dict_response = response_to_dict(raw_response)
+        dict_response = response_to_dict(raw_response, debugresponse=data.debug)
         return dict_response
 
     async def banner(self, data: DGReqUsername):
@@ -99,7 +99,7 @@ class DGCommandServices:
             endpoint=self.setting.endpoints.banner,
             params=data.model_dump(),
         )
-        dict_response = response_to_dict(raw_response)
+        dict_response = response_to_dict(raw_response, debugresponse=data.debug)
         return dict_response
 
     async def logout(self, data: DGReqUsername):
@@ -109,7 +109,7 @@ class DGCommandServices:
             endpoint=self.setting.endpoints.logout,
             params=data.model_dump(),
         )
-        dict_response = response_to_dict(raw_response)
+        dict_response = response_to_dict(raw_response, debugresponse=data.debug)
         return dict_response
 
     # utils methode
@@ -120,5 +120,5 @@ class DGCommandServices:
             endpoint=self.setting.endpoints.sim_status,
             params=data.model_dump(),
         )
-        dict_response = response_to_dict(raw_response)
+        dict_response = response_to_dict(raw_response, debugresponse=data.debug)
         return dict_response
