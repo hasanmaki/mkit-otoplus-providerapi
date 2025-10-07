@@ -1,5 +1,5 @@
 from enum import StrEnum
-from typing import Any, Generic, TypeVar
+from typing import Any, TypeVar
 
 from pydantic import BaseModel
 
@@ -28,7 +28,7 @@ class ApiRawResponse(BaseModel):
 
 
 # --- 2.3 Model Hasil Akhir (Output/Envelope Model) ---
-class ApiResponseProcessor(BaseModel, Generic[T]):
+class ApiResponseProcessor[T](BaseModel):
     """Model output akhir, siap untuk encoding."""
 
     status_code: int

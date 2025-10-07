@@ -1,25 +1,26 @@
-from typing import Any
+from typing import Any, TypeVar
 
 import httpx
 from pydantic import BaseModel
 
 from src.core.client.service_parser import parse_response
 
+T = TypeVar("T")
 
-class ApiRawResponse(BaseModel):
+
+class ApiRawResponse[T](BaseModel):
     status_code: int
     content_type: str | None
-    url: str
     meta: dict[str, Any]
-    message: str
-    data: dict[str, Any]
+    body_type: str
+    data: T
 
 
 def normalize_response(
     resp: httpx.Response, debugresponse: bool = False
 ) -> ApiRawResponse:
     """Normalize hasil parse menjadi ApiRawResponse Pydantic."""
-    message_type, raw_data = parse_response(resp)
+    body_type, raw_data = parse_response(resp)
     meta = {}
     if debugresponse:
         meta = {
@@ -32,8 +33,7 @@ def normalize_response(
     return ApiRawResponse(
         status_code=getattr(resp, "status_code", 0),
         content_type=resp.headers.get("content-type") if resp.headers else None,
-        url=str(getattr(getattr(resp, "request", None), "url", "")),
         meta=meta,
-        message=message_type,
+        body_type=body_type,
         data=raw_data,
     )
