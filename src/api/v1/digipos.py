@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends
 
 from deps.digipos import DepDigiposHttpService, DepDigiposSettings
 from schemas.sch_digipos import DGReqUsername, DGReqUsnOtp, DGReqUsnPass
+from services.digipos.account_service import DGCommandServices
 
 router = APIRouter(prefix="/digipos", tags=["digipos"])
 
@@ -62,14 +63,9 @@ async def balance(
     settings: DepDigiposSettings,
 ):
     """Get verify OTP ke digipos Account API."""
-    params = {"username": query.username}
-    if query.username != settings.username:
-        raise ValueError("Username tidak sesuai dengan yang terdaftar")
-    endpoint = settings.endpoints.balance
-    debugresponse = settings.debug
-    response_model = await http_service.safe_request(
-        "GET", endpoint=endpoint, params=params, debugresponse=debugresponse
-    )
+    service = DGCommandServices(http_service, settings)
+    response_model = await service.balance(query)
+
     return response_model
 
 
