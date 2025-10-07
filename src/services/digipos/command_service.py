@@ -2,9 +2,9 @@
 
 from loguru import logger
 
-from core.client.service_parser import parse_response
 from src.config.settings import DigiposConfig
-from src.core.client import HttpClientService
+from src.core.client.service_normalizer import normalize_response
+from src.core.client.service_request import HttpClientService
 from src.schemas.sch_digipos import (
     DGReqSimStatus,
     DGReqUsername,
@@ -33,8 +33,8 @@ class DGCommandServices:
             endpoint=endpoint,
             params=params,
         )
-        parsed_response = parse_response(raw_response)
-        return parsed_response
+        normalized = normalize_response(raw_response)
+        return normalized
 
     async def login(self, data: DGReqUsnPass):
         """Ambil login dari Digipos API."""

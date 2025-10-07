@@ -1,11 +1,11 @@
 # ruff :noqa
 from typing import Annotated
 
+from src.core.client.base_manager import HttpClientManager
 from fastapi import Depends, Request
 from httpx import AsyncClient
 
 from src.config.settings import AppSettings
-from src.core.client import HttpClientManager, HttpClientService
 
 
 async def get_appsettings(request: Request) -> AppSettings:

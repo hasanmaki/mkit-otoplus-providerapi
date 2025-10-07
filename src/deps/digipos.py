@@ -20,8 +20,8 @@ from typing import Annotated
 from fastapi import Depends
 from httpx import AsyncClient
 
+from core.client.service_request import HttpClientService
 from src.config.settings import AppSettings, DigiposConfig
-from src.core.client import HttpClientService
 from src.deps.dep_factory import client_factory, get_appsettings
 from src.services.digipos.auth_service import DigiposAuthService
 from src.services.digipos.command_service import DGCommandServices
