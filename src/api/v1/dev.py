@@ -2,9 +2,9 @@
 from fastapi import APIRouter
 from loguru import logger
 
+from deps.digipos import DepDigiposApiClient, DepDigiposSettings
 from src.core.client.main_service import HttpClientService
 from src.core.utils.client_utils import handle_response, request_handler
-from src.deps import DepDigiposApiClient, DepDigiposSettings
 from src.services.digipos.srv_commands import DigiposCommands
 
 router = APIRouter(prefix="/test", tags=["test"])

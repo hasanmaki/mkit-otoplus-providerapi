@@ -3,12 +3,9 @@ from typing import Annotated
 from fastapi import Depends, Request
 from httpx import AsyncClient
 
-from src.config.cfg_api_clients import DigiposConfig
+from services.clients.manager import ApiClientManager
 from src.config.settings import AppSettings
-from src.core.client import HttpClientService
-from src.services.clients.manager import ApiClientManager
-
-# --- base dependencies ---
+from src.core.client import HttpClientManager, HttpClientService
 
 
 async def get_appsettings(request: Request) -> AppSettings:
@@ -19,15 +16,12 @@ async def get_appsettings(request: Request) -> AppSettings:
 DepAppSettings = Annotated[AppSettings, Depends(get_appsettings)]
 
 
-def get_api_manager(request: Request) -> ApiClientManager:
+def get_api_manager(request: Request) -> HttpClientManager:
     """Ambil ApiClientManager dari app state."""
     return request.app.state.api_manager
 
 
 DepApiManager = Annotated[ApiClientManager, Depends(get_api_manager)]
-
-
-# --- factories ---
 
 
 def client_factory(config_getter):
@@ -54,23 +48,3 @@ def http_service_factory(config_getter):
         return HttpClientService(client, config.name)
 
     return _dep
-
-
-# --- specific digipos ---
-
-
-def get_digipos_config(settings: AppSettings) -> DigiposConfig:
-    return settings.digipos
-
-
-DepDigiposSettings = Annotated[
-    DigiposConfig, Depends(lambda s=Depends(get_appsettings): s.digipos)
-]
-
-DepDigiposApiClient = Annotated[
-    AsyncClient, Depends(client_factory(lambda s: s.digipos))
-]
-
-DepDigiposHttpService = Annotated[
-    HttpClientService, Depends(http_service_factory(lambda s: s.digipos))
-]
