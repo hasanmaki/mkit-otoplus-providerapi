@@ -12,7 +12,7 @@ class HttpClientService:
     """HTTP client dengan auto parser berbasis content-type."""
 
     def __init__(self, client: httpx.AsyncClient, service_name: str | None = None):
-        inferred_name = service_name or getattr(client.base_url, "host", "Upstream")
+        inferred_name = getattr(client.base_url, "host", "Upstream") or service_name
         self.client = client
         self.log = logger.bind(service=inferred_name)
 
@@ -23,7 +23,7 @@ class HttpClientService:
             raise ValueError(f"Invalid HTTP method: {method}")
 
         try:
-            self.log.debug(f"Issuing {method} request to {endpoint}")
+            self.log.debug(f"Issuing request: [{method}] to endpoint: [{endpoint}]")
             resp = await getattr(self.client, method.lower())(endpoint, **kwargs)
             resp.raise_for_status()
         except httpx.RequestError as exc:

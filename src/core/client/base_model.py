@@ -29,9 +29,12 @@ class NormalizedResponse:
         meta: dict[str, Any] | None = None,
     ) -> "NormalizedResponse":
         """Response normal (berhasil)."""
+        url_obj = getattr(getattr(resp, "request", None), "url", None)
+        url = str(url_obj.copy_with(query=None)) if url_obj else ""
+
         return cls(
             status_code=getattr(resp, "status_code", 200),
-            url=str(getattr(getattr(resp, "request", None), "url", "")),
+            url=url,
             meta=meta or {},
             message=message,
             data=data,
@@ -40,7 +43,7 @@ class NormalizedResponse:
     @classmethod
     def error(
         cls,
-        url: str,
+        url: str | None,
         *,
         error: Exception,
         message: str = ResponseMessage.INTERNAL_ERROR,
@@ -48,7 +51,7 @@ class NormalizedResponse:
         """Response gagal (error)."""
         return cls(
             status_code=0,
-            url=url,
+            url=str(url) if url else "",
             meta={},
             message=message,
             data={"error": str(error)},
