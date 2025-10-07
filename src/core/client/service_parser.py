@@ -1,7 +1,10 @@
+import timeit
 from enum import StrEnum
 from typing import Any
 
 import httpx
+
+from utils.log_utils import timeit
 
 
 class ResponseMessage(StrEnum):
@@ -16,6 +19,7 @@ class ResponseMessage(StrEnum):
     UNKNOWN = "UNKNOWN"  # Tipe tidak terdeteksi atau error tidak terduga
 
 
+@timeit
 def _parse_json_safe(
     resp: httpx.Response,
 ) -> tuple[ResponseMessage, dict[str, Any] | Any]:
@@ -39,6 +43,7 @@ def _parse_json_safe(
     return ResponseMessage.PRIMITIVE, {"raw": body}
 
 
+@timeit
 def _parse_text_safe(resp: httpx.Response) -> tuple[ResponseMessage, dict[str, Any]]:
     """Mencoba parsing body sebagai teks (fallback)."""
     try:
@@ -55,6 +60,7 @@ def _parse_text_safe(resp: httpx.Response) -> tuple[ResponseMessage, dict[str, A
     return ResponseMessage.TEXT, {"raw": text}
 
 
+@timeit
 def _parse_body(resp: httpx.Response) -> tuple[ResponseMessage, dict[str, Any] | Any]:
     """Logika utama untuk mendeteksi content-type dan parsing body."""
     content_type = resp.headers.get("content-type", "").lower()
@@ -82,6 +88,7 @@ def _parse_body(resp: httpx.Response) -> tuple[ResponseMessage, dict[str, Any] |
 # --- Helper Function for Metadata ---
 
 
+@timeit
 def _get_meta(resp: httpx.Response) -> dict[str, Any]:
     """Ekstrak metadata penting dari httpx.Response."""
     return {
@@ -100,6 +107,7 @@ def _get_meta(resp: httpx.Response) -> dict[str, Any]:
 # --- Main Conversion Function ---
 
 
+@timeit
 def response_to_dict(
     resp: httpx.Response, debugresponse: bool = False
 ) -> dict[str, Any]:

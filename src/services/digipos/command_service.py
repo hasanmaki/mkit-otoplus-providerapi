@@ -53,8 +53,6 @@ class DGCommandServices:
         self.auth_service.validate_username(data.username)
         return await self._short_call(self.setting.endpoints.balance, data.model_dump())
 
-    # methode
-
     async def profile(self, data: DGReqUsername):
         self.auth_service.validate_username(data.username)
         return await self._short_call(self.setting.endpoints.profile, data.model_dump())
