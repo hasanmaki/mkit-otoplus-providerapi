@@ -1,11 +1,10 @@
 """dsini hanya bertugas menentukan endpoint, dan internal bussines logic, masalah parse dan lain lain di lakukan di taempat lain."""
 
 from loguru import logger
-from pydantic import ValidationError
 
+from core.client.service_parser import parse_response
 from src.config.settings import DigiposConfig
 from src.core.client import HttpClientService
-from src.schemas.base_response import ApiRawResponse
 from src.schemas.sch_digipos import (
     DGReqSimStatus,
     DGReqUsername,
@@ -29,9 +28,13 @@ class DGCommandServices:
         self.logger = logger.bind(service="Digipos Command Service")
 
     async def _short_call(self, endpoint: str, params: dict):
-        return await self.http_service.safe_request(
-            "GET", endpoint, params=params, debugresponse=self.debug
+        raw_response = await self.http_service.safe_request(
+            method="GET",
+            endpoint=endpoint,
+            params=params,
         )
+        parsed_response = parse_response(raw_response)
+        return parsed_response
 
     async def login(self, data: DGReqUsnPass):
         """Ambil login dari Digipos API."""
@@ -48,17 +51,9 @@ class DGCommandServices:
     async def balance(self, data: DGReqUsername):
         """Ambil Balance Dari Digipos API."""
         self.auth_service.validate_username(data.username)
-        dict_response = await self._short_call(
-            self.setting.endpoints.balance, data.model_dump()
-        )
-        # pydantic APi validation
-        try:
-            response = ApiRawResponse(**dict_response)
-        except ValidationError:
-            self.logger.debug(f"cant parse the response {dict_response}")
-            response = dict_response
-        self.logger.debug("data is validated")
-        return response
+        return await self._short_call(self.setting.endpoints.balance, data.model_dump())
+
+    # methode
 
     async def profile(self, data: DGReqUsername):
         self.auth_service.validate_username(data.username)

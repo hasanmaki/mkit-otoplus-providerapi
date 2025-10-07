@@ -151,28 +151,3 @@ async def get_sim_status(
     response_model = await service.sim_status(query)
 
     return response_model
-
-
-# @router.get(
-#     path="/balance",
-#     summary="Forward balance command to Digipos API",
-#     responses={
-#         200: {
-#             "content": {
-#                 "text/plain": {
-#                     "example": "api_status_code=200#meta={'x-powered-by': 'Express', 'content_type': 'application/json; charset=utf-8', 'content_length': '146', 'elapsed_ms': 887.54, 'host': '10.0.0.3', 'path': '/balance', 'method': 'GET'}#data={'ngrs': {'1000': '0', '5000': '0', '10000': '0', '15000': '0', '20000': '0', '25000': '0', '50000': '0', '100000': '0', 'BULK': '0'}, 'linkaja': '3230', 'finpay': '0'}"
-#                 }
-#             }
-#         }
-#     },
-#     response_class=PlainTextResponse,
-# )
-# async def balance(
-#     service: ServiceDigiposAccount = Depends(get_digipos_account_service),
-# ):
-#     """Ambil balance dari Digipos API dan return sebagai text-friendly.
-#     Format:
-#     api_status_code=&meta=&data=
-#     """
-#     response_model = await service.get_balance()
-#     return response_model

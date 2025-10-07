@@ -1,10 +1,19 @@
+from enum import StrEnum
+
 import httpx
 
-from src.config.constant import ResponseMessage
+
+class ResponseMessage(StrEnum):
+    DICT = "DICT"
+    LIST = "LIST"
+    TEXT = "TEXT"
+    PRIMITIVE = "PRIMITVE"
+    INTERNAL_ERROR = "ERROR"
+    EMPTY_BODY = "NONE"
+    UNKNOWN = "UNKNOWN"
 
 
 def _parse_json(resp: httpx.Response) -> tuple[str, dict]:
-    """Parse JSON response, fallback ke text/empty jika decoding error."""
     try:
         body = resp.json()
         if isinstance(body, dict):
@@ -12,17 +21,13 @@ def _parse_json(resp: httpx.Response) -> tuple[str, dict]:
         if isinstance(body, list):
             return ResponseMessage.LIST, {"items": body, "count": len(body)}
     except httpx.DecodingError:
-        # fallback ke text
         return _parse_text_safe(resp)
     except Exception:
-        return ResponseMessage.UNKNOWN, {
-            "raw": resp.text if hasattr(resp, "text") else None
-        }
+        return ResponseMessage.UNKNOWN, {"raw": getattr(resp, "text", None)}
     return ResponseMessage.PRIMITIVE, {"raw": body}
 
 
 def _parse_text_safe(resp: httpx.Response) -> tuple[str, dict]:
-    """Parse text/html response dengan safe guard decoding errors."""
     try:
         text = resp.text.strip()
         if not text:
@@ -32,21 +37,14 @@ def _parse_text_safe(resp: httpx.Response) -> tuple[str, dict]:
     return ResponseMessage.TEXT, {"raw": text}
 
 
-# ----------------------------------------------------------
-# Exposed function for HttpClientService
-# ----------------------------------------------------------
-
-
 def parse_response(resp: httpx.Response) -> tuple[str, dict]:
-    """Auto detect content-type dan parse responsenya dengan safe fallback."""
+    """Auto detect content-type dan parsing raw response."""
     ctype = resp.headers.get("content-type", "").lower() if resp.headers else ""
-
     try:
         if "json" in ctype:
             return _parse_json(resp)
         if "text" in ctype or "html" in ctype:
             return _parse_text_safe(resp)
-
         return _parse_text_safe(resp)
     except Exception:
         return ResponseMessage.UNKNOWN, {"raw": None}
