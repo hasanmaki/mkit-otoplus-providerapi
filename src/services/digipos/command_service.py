@@ -1,7 +1,11 @@
 """dsini hanya bertugas menentukan endpoint, dan internal bussines logic, masalah parse dan lain lain di lakukan di taempat lain."""
 
+from loguru import logger
+from pydantic import ValidationError
+
 from src.config.settings import DigiposConfig
 from src.core.client import HttpClientService
+from src.schemas.base_response import ApiRawResponse
 from src.schemas.sch_digipos import (
     DGReqSimStatus,
     DGReqUsername,
@@ -22,6 +26,7 @@ class DGCommandServices:
         self.auth_service = auth_service
         self.setting = setting
         self.debug = setting.debug
+        self.logger = logger.bind(service="Digipos Command Service")
 
     async def _short_call(self, endpoint: str, params: dict):
         return await self.http_service.safe_request(
@@ -43,7 +48,17 @@ class DGCommandServices:
     async def balance(self, data: DGReqUsername):
         """Ambil Balance Dari Digipos API."""
         self.auth_service.validate_username(data.username)
-        return await self._short_call(self.setting.endpoints.balance, data.model_dump())
+        dict_response = await self._short_call(
+            self.setting.endpoints.balance, data.model_dump()
+        )
+        # pydantic APi validation
+        try:
+            response = ApiRawResponse(**dict_response)
+        except ValidationError:
+            self.logger.debug(f"cant parse the response {dict_response}")
+            response = dict_response
+        self.logger.debug("data is validated")
+        return response
 
     async def profile(self, data: DGReqUsername):
         self.auth_service.validate_username(data.username)

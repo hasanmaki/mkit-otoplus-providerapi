@@ -2,10 +2,6 @@ import httpx
 
 from src.config.constant import ResponseMessage
 
-# ----------------------------------------------------------
-# Internal parser functions (safe)
-# ----------------------------------------------------------
-
 
 def _parse_json(resp: httpx.Response) -> tuple[str, dict]:
     """Parse JSON response, fallback ke text/empty jika decoding error."""
@@ -51,7 +47,6 @@ def parse_response(resp: httpx.Response) -> tuple[str, dict]:
         if "text" in ctype or "html" in ctype:
             return _parse_text_safe(resp)
 
-        # fallback untuk semua content-type lain
         return _parse_text_safe(resp)
     except Exception:
         return ResponseMessage.UNKNOWN, {"raw": None}

@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 from fastapi.responses import Response
 
-from core.client.base_model import NormalizedResponse
+from core.client.base_response_model import NormalizedResponse
 from deps.digipos import DepDigiposHttpService, DepDigiposSettings
 
 router = APIRouter(prefix="/test", tags=["test"])

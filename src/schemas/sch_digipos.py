@@ -17,3 +17,9 @@ class DGReqUsnOtp(DGReqUsername):
 
 class DGReqSimStatus(DGReqUsername):
     to: str
+
+
+class DGResBalance(BaseModel):
+    ngrs: dict[str, str]
+    linkaja: str
+    finpay: str

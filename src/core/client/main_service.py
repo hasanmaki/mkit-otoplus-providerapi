@@ -3,8 +3,8 @@ from typing import Any
 import httpx
 from loguru import logger
 
-from core.client.base_model import NormalizedResponse
 from core.client.base_parser import parse_response
+from core.client.base_response_model import NormalizedResponse
 from src.custom.exceptions import HTTPConnectionError, HttpResponseError
 
 

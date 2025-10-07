@@ -1,30 +1,38 @@
-from typing import Any, TypeVar
+from enum import StrEnum
+from typing import Any, Generic, TypeVar
 
 from pydantic import BaseModel
 
 T = TypeVar("T")
 
 
-class ApiResponseGeneric[T](BaseModel):
-    """base schemas untuk semua response dari api yang sudah di standardisasi.
+class ParsedStatus(StrEnum):
+    """Status hasil parsing data."""
 
-    next kita akan bermain dsini biar enak.
+    OK = "OK"
+    ERROR = "ERROR"
+    FORWARD = "FORWARD"
+
+
+class ApiRawResponse(BaseModel):
+    """Model untuk memvalidasi struktur dasar respons API eksternal.
+
+    #Model Respons Mentah (Input dari Upstream)
     """
 
-    api_status_code: int
-    meta: dict[str, Any] | None
-    data: T
+    status_code: int
+    url: str
+    meta: dict[str, Any]
+    message: str  # Kunci utama untuk logika parsing
+    data: dict[str, Any]  # Data mentah/belum divalidasi
 
-    model_config = {"extra": "allow"}
 
+# --- 2.3 Model Hasil Akhir (Output/Envelope Model) ---
+class ApiResponseProcessor(BaseModel, Generic[T]):
+    """Model output akhir, siap untuk encoding."""
 
-class ApiResponse(BaseModel):
-    """api response standard pertama.
-
-    nanti refactor kalo calm"""
-
-    api_status_code: int
-    meta: dict[str, Any] | None
-    data: Any
-
-    model_config = {"extra": "allow"}
+    status_code: int
+    url: str
+    meta: dict[str, Any]
+    parsed: ParsedStatus
+    data: T  # Bisa DGResBalance (OK) atau dict[str, Any] (FORWARD/ERROR)
