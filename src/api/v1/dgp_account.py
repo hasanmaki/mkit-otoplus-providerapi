@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, Query
 from deps.digipos import (
     DepDigiposCommandService,
 )
-from src.schemas.sch_digipos import (
+from services.digipos.sch_digipos import (
     DGReqSimStatus,
     DGReqUsername,
     DGReqUsnOtp,

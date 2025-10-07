@@ -1,7 +1,6 @@
 import re
 
 from pydantic import BaseModel, Field
-
 from src.core.sch_response import ApiResponseGeneric
 
 
