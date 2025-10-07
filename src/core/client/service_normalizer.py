@@ -16,12 +16,12 @@ class ApiRawResponse(BaseModel):
 
 
 def normalize_response(
-    resp: httpx.Response, include_meta: bool = True
+    resp: httpx.Response, debugresponse: bool = False
 ) -> ApiRawResponse:
     """Normalize hasil parse menjadi ApiRawResponse Pydantic."""
     message_type, raw_data = parse_response(resp)
     meta = {}
-    if include_meta:
+    if debugresponse:
         meta = {
             "headers": dict(getattr(resp, "headers", {})),
             "elapsed": getattr(resp.elapsed, "total_seconds", lambda: None)()

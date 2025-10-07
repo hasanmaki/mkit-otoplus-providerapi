@@ -33,7 +33,7 @@ class DGCommandServices:
             endpoint=endpoint,
             params=params,
         )
-        normalized = normalize_response(raw_response)
+        normalized = normalize_response(raw_response, debugresponse=self.debug)
         return normalized
 
     async def login(self, data: DGReqUsnPass):

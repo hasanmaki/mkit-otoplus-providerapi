@@ -1,6 +1,8 @@
 # ruff :noqa
 from typing import Annotated
 
+from src.core.client.service_request import HttpClientService
+
 from src.core.client.base_manager import HttpClientManager
 from fastapi import Depends, Request
 from httpx import AsyncClient
