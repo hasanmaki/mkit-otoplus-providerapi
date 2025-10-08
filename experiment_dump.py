@@ -2,21 +2,13 @@ def format_otomax_dict(data: dict) -> str:
     parts = []
     for key, value in data.items():
         if isinstance(value, dict):
-            # Untuk objek bersarang (nested dict), kita panggil fungsi ini lagi (rekursif)
-            # dan membungkus hasilnya dalam kurung kurawal {}
             formatted_value = "{" + format_otomax_dict(value) + "}"
             parts.append(f"{key}={formatted_value}")
         elif isinstance(value, bool):
-            # Konversi boolean ke string "true" atau "false"
             parts.append(f"{key}={str(value).lower()}")
         else:
-            # Untuk nilai sederhana, langsung format tanpa tanda kutip
-            # Gunakan str(value) untuk menangani angka
             parts.append(f"{key}={value!s}")
-
-    # Gabungkan semua bagian dengan delimiter '&'
-    return "&".join(parts)
-    # hapus spasi berlebih
+    return "&".join(parts).replace(" ", "")
 
 
 # Data input adalah raw_response Anda

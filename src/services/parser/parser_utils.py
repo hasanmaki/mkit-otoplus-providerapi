@@ -62,30 +62,45 @@ def clean_validate_raw_dict_data[T: BaseModel](
     )
 
 
-def fallback_response(
-    raw_response: ApiResponseIN | None = None, description: str = "No response received"
-) -> ApiResponseOUT[Any]:
-    """Build a standard SKIPPED response.
+def dict_to_plaintext(data: dict) -> str:
+    parts = []
+    for key, value in data.items():
+        if isinstance(value, dict):
+            formatted_value = "{" + dict_to_plaintext(value) + "}"
+            parts.append(f"{key}={formatted_value}")
+        elif isinstance(value, bool):
+            parts.append(f"{key}={str(value).lower()}")
+        else:
+            parts.append(f"{key}={value!s}")
+    return "&".join(parts).replace(" ", "")
 
-    - If raw_response is provided, preserve meta, url, status_code, debug.
-    - Otherwise, return default values.
-    """
-    if raw_response:
-        return ApiResponseOUT[Any](
-            status_code=raw_response.status_code,
-            url=raw_response.url,
-            debug=raw_response.debug,
-            meta=raw_response.meta.copy() if raw_response.meta else None,
-            parse=CleanAndParseStatus.SKIPPED,
-            cleaned_data=None or raw_response.raw_data,
-            description=description,
-        )
-    return ApiResponseOUT[Any](
-        status_code=0,
-        url="",
-        debug=False,
-        meta=None,
-        parse=CleanAndParseStatus.SKIPPED,
-        cleaned_data=None,
-        description=description,
-    )
+
+# commented for futures if needed.
+
+# def fallback_response(
+#     raw_response: ApiResponseIN | None = None, description: str = "No response received"
+# ) -> ApiResponseOUT[Any]:
+#     """Build a standard SKIPPED response.
+
+#     - If raw_response is provided, preserve meta, url, status_code, debug.
+#     - Otherwise, return default values.
+#     """
+#     if raw_response:
+#         return ApiResponseOUT[Any](
+#             status_code=raw_response.status_code,
+#             url=raw_response.url,
+#             debug=raw_response.debug,
+#             meta=raw_response.meta.copy() if raw_response.meta else None,
+#             parse=CleanAndParseStatus.SKIPPED,
+#             cleaned_data=None or raw_response.raw_data,
+#             description=description,
+#         )
+#     return ApiResponseOUT[Any](
+#         status_code=0,
+#         url="",
+#         debug=False,
+#         meta=None,
+#         parse=CleanAndParseStatus.SKIPPED,
+#         cleaned_data=None,
+#         description=description,
+#     )
