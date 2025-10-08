@@ -3,7 +3,6 @@
 from loguru import logger
 
 from services.client.http_request import HttpRequestService
-from services.client.http_response import response_to_dict
 from services.digipos.digipos_parser import parse_balance_data
 from services.digipos.sch_digipos import (
     DGReqSimStatus,
@@ -35,9 +34,7 @@ class DGCommandServices:
             endpoint=self.setting.endpoints.login,
             params=data.model_dump(),
         )
-        dict_response = response_to_dict(raw_response, debugresponse=data.debug)
-
-        return dict_response
+        return raw_response
 
     async def verify_otp(self, data: DGReqUsnOtp):
         """Ambil verify OTP dari Digipos API."""
@@ -47,9 +44,7 @@ class DGCommandServices:
             endpoint=self.setting.endpoints.verify_otp,
             params=data.model_dump(),
         )
-        dict_response = response_to_dict(raw_response, debugresponse=data.debug)
-
-        return dict_response
+        return raw_response
 
     async def balance(self, data: DGReqUsername):
         """Ambil Balance dari Digipos API."""
@@ -58,10 +53,10 @@ class DGCommandServices:
             method="GET",
             endpoint=self.setting.endpoints.balance,
             params=data.model_dump(),
+            debugresponse=data.debug,
         )
 
-        dict_response = response_to_dict(raw_response, debugresponse=data.debug)
-        meta, body = dict_response["meta"], dict_response.get("data")
+        meta, body = raw_response["meta"], raw_response.get("data")
 
         # Tinggal panggil parser sesuai endpoint
         return parse_balance_data(meta, body)
@@ -73,8 +68,7 @@ class DGCommandServices:
             endpoint=self.setting.endpoints.profile,
             params=data.model_dump(),
         )
-        dict_response = response_to_dict(raw_response, debugresponse=data.debug)
-        return dict_response
+        return raw_response
 
     async def list_va(self, data: DGReqUsername):
         self.auth_service.validate_username(data.username)
@@ -83,8 +77,7 @@ class DGCommandServices:
             endpoint=self.setting.endpoints.list_va,
             params=data.model_dump(),
         )
-        dict_response = response_to_dict(raw_response, debugresponse=data.debug)
-        return dict_response
+        return raw_response
 
     async def reward(self, data: DGReqUsername):
         self.auth_service.validate_username(data.username)
@@ -93,8 +86,7 @@ class DGCommandServices:
             endpoint=self.setting.endpoints.reward,
             params=data.model_dump(),
         )
-        dict_response = response_to_dict(raw_response, debugresponse=data.debug)
-        return dict_response
+        return raw_response
 
     async def banner(self, data: DGReqUsername):
         self.auth_service.validate_username(data.username)
@@ -103,8 +95,7 @@ class DGCommandServices:
             endpoint=self.setting.endpoints.banner,
             params=data.model_dump(),
         )
-        dict_response = response_to_dict(raw_response, debugresponse=data.debug)
-        return dict_response
+        return raw_response
 
     async def logout(self, data: DGReqUsername):
         self.auth_service.validate_username(data.username)
@@ -113,8 +104,7 @@ class DGCommandServices:
             endpoint=self.setting.endpoints.logout,
             params=data.model_dump(),
         )
-        dict_response = response_to_dict(raw_response, debugresponse=data.debug)
-        return dict_response
+        return raw_response
 
     # utils methode
     async def sim_status(self, data: DGReqSimStatus):
@@ -124,5 +114,4 @@ class DGCommandServices:
             endpoint=self.setting.endpoints.sim_status,
             params=data.model_dump(),
         )
-        dict_response = response_to_dict(raw_response, debugresponse=data.debug)
-        return dict_response
+        return raw_response

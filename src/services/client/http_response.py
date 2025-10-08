@@ -1,20 +1,10 @@
-from enum import StrEnum
 from typing import Any
 
 import httpx
+from loguru import logger
 
-from utils.log_utils import timeit
-
-
-class ResponseMessage(StrEnum):
-    """Jenis hasil parsing body response."""
-
-    DICT = "DICT"
-    LIST = "LIST"
-    TEXT = "TEXT"
-    PRIMITIVE = "PRIMITIVE"
-    EMPTY = "EMPTY"
-    ERROR = "ERROR"
+from services.client.sch_response import ResponseMessage
+from utils.log_utils import logger_wraps, timeit
 
 
 class HttpResponseService:
@@ -29,7 +19,11 @@ class HttpResponseService:
     #  PURE PARSER HELPERS
     # ============================================================
     def _try_parse_json(self) -> tuple[ResponseMessage, dict[str, Any] | Any]:
-        body = self.resp.json()
+        try:
+            body = self.resp.json()
+        except Exception as e:
+            raise ValueError(f"Invalid JSON: {e}") from e
+
         if isinstance(body, dict):
             return ResponseMessage.DICT, body
         if isinstance(body, list):
@@ -37,7 +31,7 @@ class HttpResponseService:
         return ResponseMessage.PRIMITIVE, {"raw": body}
 
     def _try_parse_text(self) -> tuple[ResponseMessage, dict[str, Any]]:
-        text = self.resp.text.strip()
+        text = (self.resp.text or "").strip()
         if not text:
             return ResponseMessage.EMPTY, {"raw": None}
         return ResponseMessage.TEXT, {"raw": text}
@@ -48,7 +42,7 @@ class HttpResponseService:
     @timeit
     def parse_body(self) -> tuple[ResponseMessage, dict[str, Any] | Any]:
         """Fallback chain: JSON → TEXT → ERROR."""
-        content_type = self.resp.headers.get("content-type", "").lower()
+        content_type = (self.resp.headers.get("content-type") or "").lower()
 
         # Berdasarkan Content-Type
         try:
@@ -69,7 +63,9 @@ class HttpResponseService:
         # Gagal total
         return ResponseMessage.ERROR, {
             "error": self.last_error or "Unknown parsing error",
-            "raw": None,
+            "raw": self.resp.text[:500]
+            if self.resp.text
+            else None,  # kasih potongan isi
         }
 
     # ============================================================
@@ -79,19 +75,20 @@ class HttpResponseService:
         resp = self.resp
         return {
             "url": str(resp.url),
-            "host": resp.url.host,
-            "path": resp.url.path,
+            "host": getattr(resp.url, "host", None),
+            "path": getattr(resp.url, "path", None),
             "status_code": resp.status_code,
             "reason_phrase": resp.reason_phrase,
-            "elapsed_time_s": resp.elapsed.total_seconds(),
+            "elapsed_time_s": getattr(resp.elapsed, "total_seconds", lambda: None)(),
             "content_type": resp.headers.get("content-type"),
         }
 
     def _get_debug_meta(self) -> dict[str, Any]:
         resp = self.resp
+        req = getattr(resp, "request", None)
         return {
-            "method": resp.request.method if resp.request else None,
-            "request_headers": dict(resp.request.headers) if resp.request else None,
+            "method": getattr(req, "method", None),
+            "request_headers": dict(getattr(req, "headers", {})),
             "response_headers": dict(resp.headers),
             "response_history": [dict(r.headers) for r in resp.history],
             "response_cookies": dict(resp.cookies),
@@ -100,16 +97,17 @@ class HttpResponseService:
     # ============================================================
     #  PUBLIC API
     # ============================================================
+    @logger_wraps(level="DEBUG")
     @timeit
     def to_dict(self) -> dict[str, Any]:
-        """Return dict(meta, data) yang siap dipakai service layer."""
+        """Return dict(meta, data) siap dipakai service layer."""
         meta = self._get_core_meta()
         if self.debug:
             meta.update(self._get_debug_meta())
 
         body_type, parsed_data = self.parse_body()
         meta["body_type"] = body_type
-
+        logger.debug(f"the mode: -> {self.debug}")
         return {"meta": meta, "data": parsed_data}
 
 
@@ -123,11 +121,12 @@ class ResponseParserFactory:
         self.parser_cls = parser_cls
 
     def __call__(self, resp: httpx.Response, debug: bool = False) -> dict[str, Any]:
+        """Callable agar bisa langsung dipakai di service layer."""
         return self.parser_cls(resp, debug).to_dict()
 
 
 def response_to_dict(
     resp: httpx.Response, debugresponse: bool = False
 ) -> dict[str, Any]:
-    """Wrapper simpel (non-DI usecase)."""
+    """Wrapper simple (non-DI usecase)."""
     return HttpResponseService(resp, debugresponse).to_dict()
