@@ -2,7 +2,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, Query
 
-from deps.digipos import (
+from deps.dep_digipos import (
     DepDigiposCommandService,
 )
 from services.digipos.sch_digipos import (

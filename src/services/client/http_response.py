@@ -7,142 +7,127 @@ from utils.log_utils import timeit
 
 
 class ResponseMessage(StrEnum):
-    """Tipe pesan atau struktur data hasil parsing body response."""
+    """Jenis hasil parsing body response."""
 
-    DICT = "DICT"  # Body adalah dictionary
-    LIST = "LIST"  # Body adalah list
-    TEXT = "TEXT"  # Body adalah string (teks, html, xml, dll.)
-    PRIMITIVE = "PRIMITIVE"  # Body adalah tipe data primitif (int, bool, float, dll.)
-    EMPTY = "EMPTY"  # Body kosong
-    ERROR = "ERROR"  # Terjadi error saat parsing
-    UNKNOWN = "UNKNOWN"  # Tipe tidak terdeteksi atau error tidak terduga
-
-
-@timeit
-def _parse_text_safe(resp: httpx.Response) -> tuple[ResponseMessage, dict[str, Any]]:
-    """Mencoba parsing body sebagai teks (fallback) dan mendeteksi EMPTY."""
-    try:
-        text = resp.text.strip()
-        if not text:
-            return ResponseMessage.EMPTY, {"raw": None}
-    except Exception as e:
-        # Error saat mengakses resp.text (misal: koneksi terputus saat membaca)
-        return ResponseMessage.ERROR, {
-            "error": f"Text reading failed: {e}",
-            "raw": None,
-        }
-
-    return ResponseMessage.TEXT, {"raw": text}
+    DICT = "DICT"
+    LIST = "LIST"
+    TEXT = "TEXT"
+    PRIMITIVE = "PRIMITIVE"
+    EMPTY = "EMPTY"
+    ERROR = "ERROR"
 
 
-@timeit
-def _parse_json_safe(
-    resp: httpx.Response,
-) -> tuple[ResponseMessage, dict[str, Any] | Any]:
-    """Mencoba parsing body sebagai JSON, menangani berbagai tipe data JSON."""
-    try:
-        body = resp.json()
+class HttpResponseService:
+    """Parser utama untuk mengubah httpx.Response → dict(meta, data)."""
+
+    def __init__(self, resp: httpx.Response, debug: bool = False):
+        self.resp = resp
+        self.debug = debug
+        self.last_error: str | None = None
+
+    # ============================================================
+    #  PURE PARSER HELPERS
+    # ============================================================
+    def _try_parse_json(self) -> tuple[ResponseMessage, dict[str, Any] | Any]:
+        body = self.resp.json()
         if isinstance(body, dict):
             return ResponseMessage.DICT, body
         if isinstance(body, list):
-            # Mengembalikan list sebagai bagian dari dict untuk konsistensi
             return ResponseMessage.LIST, {"items": body, "count": len(body)}
-    except httpx.DecodingError:
-        # Gagal decode JSON, coba parsing sebagai teks
-        return _parse_text_safe(resp)
-    except Exception as e:
-        # Error lain saat parsing JSON
+        return ResponseMessage.PRIMITIVE, {"raw": body}
+
+    def _try_parse_text(self) -> tuple[ResponseMessage, dict[str, Any]]:
+        text = self.resp.text.strip()
+        if not text:
+            return ResponseMessage.EMPTY, {"raw": None}
+        return ResponseMessage.TEXT, {"raw": text}
+
+    # ============================================================
+    #  MAIN PARSER LOGIC
+    # ============================================================
+    @timeit
+    def parse_body(self) -> tuple[ResponseMessage, dict[str, Any] | Any]:
+        """Fallback chain: JSON → TEXT → ERROR."""
+        content_type = self.resp.headers.get("content-type", "").lower()
+
+        # Berdasarkan Content-Type
+        try:
+            if "json" in content_type:
+                return self._try_parse_json()
+            if any(x in content_type for x in ["text", "html", "xml"]):
+                return self._try_parse_text()
+        except Exception as e:
+            self.last_error = f"Parsing failed ({content_type}): {e}"
+
+        # Fallback ke JSON → TEXT universal
+        for parser in (self._try_parse_json, self._try_parse_text):
+            try:
+                return parser()
+            except Exception as e:
+                self.last_error = str(e)
+
+        # Gagal total
         return ResponseMessage.ERROR, {
-            "error": f"JSON parsing failed: {e}",
-            "raw": getattr(resp, "text", None),
+            "error": self.last_error or "Unknown parsing error",
+            "raw": None,
         }
 
-    # Tipe data primitif JSON (string, number, boolean)
-    return ResponseMessage.PRIMITIVE, {"raw": body}
+    # ============================================================
+    #  META HELPERS
+    # ============================================================
+    def _get_core_meta(self) -> dict[str, Any]:
+        resp = self.resp
+        return {
+            "url": str(resp.url),
+            "host": resp.url.host,
+            "path": resp.url.path,
+            "status_code": resp.status_code,
+            "reason_phrase": resp.reason_phrase,
+            "elapsed_time_s": resp.elapsed.total_seconds(),
+            "content_type": resp.headers.get("content-type"),
+        }
+
+    def _get_debug_meta(self) -> dict[str, Any]:
+        resp = self.resp
+        return {
+            "method": resp.request.method if resp.request else None,
+            "request_headers": dict(resp.request.headers) if resp.request else None,
+            "response_headers": dict(resp.headers),
+            "response_history": [dict(r.headers) for r in resp.history],
+            "response_cookies": dict(resp.cookies),
+        }
+
+    # ============================================================
+    #  PUBLIC API
+    # ============================================================
+    @timeit
+    def to_dict(self) -> dict[str, Any]:
+        """Return dict(meta, data) yang siap dipakai service layer."""
+        meta = self._get_core_meta()
+        if self.debug:
+            meta.update(self._get_debug_meta())
+
+        body_type, parsed_data = self.parse_body()
+        meta["body_type"] = body_type
+
+        return {"meta": meta, "data": parsed_data}
 
 
-@timeit
-def _parse_body(resp: httpx.Response) -> tuple[ResponseMessage, dict[str, Any] | Any]:
-    """Logika utama untuk mendeteksi content-type dan parsing body."""
-    content_type = resp.headers.get("content-type", "").lower()
+# ============================================================
+#  FACTORY CLASS + WRAPPER FUNCTION
+# ============================================================
+class ResponseParserFactory:
+    """Factory agar bisa diinject via dependency FastAPI."""
 
-    # 1. Prioritas utama: JSON
-    if "json" in content_type:
-        return _parse_json_safe(resp)
+    def __init__(self, parser_cls: type[HttpResponseService] = HttpResponseService):
+        self.parser_cls = parser_cls
 
-    # 2. Prioritas kedua: Teks/HTML/XML/Plain
-    if "text" in content_type or "html" in content_type or "xml" in content_type:
-        return _parse_text_safe(resp)
-
-    # 3. Default: Coba parse JSON (fallback)
-    result_type, result_data = _parse_json_safe(resp)
-
-    # Jika hasil coba-coba JSON parsing adalah ERROR, fallback ke parsing teks biasa.
-    if result_type == ResponseMessage.ERROR:
-        return _parse_text_safe(resp)
-
-    return result_type, result_data
-
-
-# --- Metadata Helpers ---
-
-
-# Core Meta: Selalu diperlukan untuk Service Layer
-def _get_core_meta(resp: httpx.Response) -> dict[str, Any]:
-    """Ekstrak metadata esensial (status code, url, waktu) untuk logika bisnis."""
-    return {
-        "url": resp.url.host,
-        "path": resp.url.path,
-        "status_code": resp.status_code,
-        "reason_phrase": resp.reason_phrase,
-        "elapsed_time_s": resp.elapsed.total_seconds(),
-        "content_type": resp.headers.get("content-type"),
-    }
-
-
-@timeit
-def _get_debug_meta(resp: httpx.Response) -> dict[str, Any]:
-    """Ekstrak metadata detail (header) hanya untuk debugging."""
-    return {
-        "method": resp.request.method if resp.request else None,
-        "request_headers": dict(resp.request.headers) if resp.request else None,
-        "response_headers": dict(resp.headers),
-        "response_history": [dict(r.headers) for r in resp.history],
-        "response_cookies": dict(resp.cookies),
-    }
-
-
-# --- Main Conversion Function ---
+    def __call__(self, resp: httpx.Response, debug: bool = False) -> dict[str, Any]:
+        return self.parser_cls(resp, debug).to_dict()
 
 
 def response_to_dict(
     resp: httpx.Response, debugresponse: bool = False
 ) -> dict[str, Any]:
-    """Mengubah httpx.Response menjadi dictionary standar yang bersih dan terstruktur.
-
-    Args:
-        resp: Objek httpx.Response mentah.
-        debugresponse: Jika True, akan menyertakan header request/response detail.
-
-    Returns:
-        Dict terstruktur dengan kunci 'meta' dan 'data'.
-    """
-    # 1. SELALU ambil Core Meta
-    metadata = _get_core_meta(resp)
-
-    # 2. Ambil Debug Meta HANYA jika diperlukan
-    if debugresponse:
-        metadata.update(_get_debug_meta(resp))  # Gabungkan ke metadata yang sudah ada
-
-    # 3. Parse body
-    body_type, parsed_data = _parse_body(resp)
-
-    # Tambahkan body_type ke metadata agar Service Layer mudah mengaksesnya
-    # Tanpa harus mengakses 'body_type' di level root dict
-    metadata["body_type"] = body_type
-
-    # 4. Gabungkan menjadi dictionary standar
-    return {
-        "meta": metadata,
-        "data": parsed_data,
-    }
+    """Wrapper simpel (non-DI usecase)."""
+    return HttpResponseService(resp, debugresponse).to_dict()

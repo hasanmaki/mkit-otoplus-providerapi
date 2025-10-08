@@ -20,15 +20,19 @@ from typing import Annotated
 from fastapi import Depends
 from httpx import AsyncClient
 
-from core.client.service_request import HttpClientService
+from services.client.http_request import HttpRequestService
+from services.client.http_response import ResponseParserFactory
 from src.config.settings import AppSettings, DigiposConfig
-from src.deps.dep_factory import client_factory, get_appsettings
+from src.deps.dep_factory import (
+    client_factory,
+    get_appsettings,
+    get_response_parser_factory,
+)
 from src.services.digipos.auth_service import DigiposAuthService
 from src.services.digipos.command_service import DGCommandServices
 
 
 def get_digipos_config(
-    # INI ADALAH PERUBAHAN KRUSIALNYA
     settings: AppSettings = Depends(get_appsettings),
 ) -> DigiposConfig:
     """Ambil config Digipos dari AppSettings."""
@@ -38,9 +42,12 @@ def get_digipos_config(
 def get_digipos_http_service(
     client: AsyncClient = Depends(client_factory(lambda s: s.digipos)),
     config: DigiposConfig = Depends(get_digipos_config),
-) -> HttpClientService:
+    parser_factory: ResponseParserFactory = Depends(get_response_parser_factory),
+) -> HttpRequestService:
     """Generate HttpClientService khusus Digipos."""
-    return HttpClientService(client, config.name)
+    return HttpRequestService(
+        client=client, service_name=config.name, parser_factory=parser_factory
+    )
 
 
 def get_digipos_auth_service(
@@ -51,7 +58,7 @@ def get_digipos_auth_service(
 
 
 def get_digipos_command_service(
-    http_service: HttpClientService = Depends(get_digipos_http_service),
+    http_service: HttpRequestService = Depends(get_digipos_http_service),
     auth_service: DigiposAuthService = Depends(get_digipos_auth_service),
     config: DigiposConfig = Depends(get_digipos_config),
 ) -> DGCommandServices:
@@ -64,7 +71,7 @@ DepDigiposSettings = Annotated[DigiposConfig, Depends(get_digipos_config)]
 DepDigiposApiClient = Annotated[
     AsyncClient, Depends(client_factory(lambda s: s.digipos))
 ]
-DepDigiposHttpService = Annotated[HttpClientService, Depends(get_digipos_http_service)]
+DepDigiposHttpService = Annotated[HttpRequestService, Depends(get_digipos_http_service)]
 DepDigiposAuthService = Annotated[DigiposAuthService, Depends(get_digipos_auth_service)]
 DepDigiposCommandService = Annotated[
     DGCommandServices, Depends(get_digipos_command_service)

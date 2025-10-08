@@ -3,7 +3,7 @@ from typing import Any
 import httpx
 from loguru import logger
 
-from src.config.constant import ResponseMessage
+from services.client.http_response import ResponseMessage
 from src.custom.exceptions import HTTPConnectionError, HttpResponseError
 
 
@@ -65,7 +65,7 @@ def handle_response(response: httpx.Response, *, debug: bool = False) -> dict[st
                 msg = ResponseMessage.TEXT
             else:
                 data = {"raw": None}
-                msg = ResponseMessage.EMPTY_BODY
+                msg = ResponseMessage.EMPTY
 
         meta = {}
         if debug:
@@ -85,7 +85,7 @@ def handle_response(response: httpx.Response, *, debug: bool = False) -> dict[st
             "status_code": getattr(response, "status_code", 0),
             "url": getattr(response, "url", "unknown"),
             "meta": {},
-            "message": ResponseMessage.INTERNAL_ERROR,
+            "message": ResponseMessage.ERROR,
             "data": {"raw": str(exc)},
         }
     return {

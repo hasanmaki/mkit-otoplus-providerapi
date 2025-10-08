@@ -1,9 +1,9 @@
 # ruff :noqa
 from typing import Annotated
 
-from core.client.service_request import HttpClientService
 
 from src.core.client.base_manager import HttpClientManager
+from src.services.client.http_response import ResponseParserFactory
 from fastapi import Depends, Request
 from httpx import AsyncClient
 
@@ -39,14 +39,14 @@ def client_factory(config_getter):
     return _dep
 
 
-def http_service_factory(config_getter):
-    """Factory untuk generate HttpClientService dari AppSettings."""
+def get_response_parser_factory() -> ResponseParserFactory:
+    """Dependency provider buat ResponseParserFactory."""
+    return ResponseParserFactory()
 
-    async def _dep(
-        client: AsyncClient = Depends(client_factory(config_getter)),
-        settings: AppSettings = Depends(get_appsettings),
-    ) -> HttpClientService:
-        config = config_getter(settings)
-        return HttpClientService(client, config.name)
 
-    return _dep
+# Annotated
+from typing import Annotated
+
+DepResponseParserFactory = Annotated[
+    ResponseParserFactory, Depends(get_response_parser_factory)
+]

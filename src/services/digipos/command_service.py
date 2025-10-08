@@ -2,7 +2,7 @@
 
 from loguru import logger
 
-from services.client.http_request import HttpClientService
+from services.client.http_request import HttpRequestService
 from services.client.http_response import response_to_dict
 from services.digipos.digipos_parser import parse_balance_data
 from services.digipos.sch_digipos import (
@@ -18,7 +18,7 @@ from src.services.digipos.auth_service import DigiposAuthService
 class DGCommandServices:
     def __init__(
         self,
-        http_service: HttpClientService,
+        http_service: HttpRequestService,
         auth_service: DigiposAuthService,
         setting: DigiposConfig,
     ):

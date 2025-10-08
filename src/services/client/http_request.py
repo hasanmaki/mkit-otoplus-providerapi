@@ -1,15 +1,22 @@
 import httpx
 from loguru import logger
 
+from services.client.http_response import ResponseParserFactory
 from src.custom.exceptions import HTTPConnectionError, HttpResponseError
 
 
-class HttpClientService:
+class HttpRequestService:
     """HTTP client dengan auto parser berbasis content-type."""
 
-    def __init__(self, client: httpx.AsyncClient, service_name: str | None = None):
+    def __init__(
+        self,
+        client: httpx.AsyncClient,
+        parser_factory: ResponseParserFactory,
+        service_name: str | None = None,
+    ):
         inferred_name = getattr(client.base_url, "host", "Upstream") or service_name
         self.client = client
+        self.parser_factory = parser_factory
         self.log = logger.bind(service=inferred_name)
 
     async def _request(self, method: str, endpoint: str, **kwargs) -> httpx.Response:
@@ -38,9 +45,7 @@ class HttpClientService:
             ) from exc
         return resp
 
-    async def safe_request(
-        self, method: str, endpoint: str, **kwargs
-    ) -> httpx.Response:
-        """Public Api wrapper."""
+    async def safe_request(self, method: str, endpoint: str, **kwargs):
+        """High level call."""
         raw_response = await self._request(method, endpoint, **kwargs)
-        return raw_response
+        return self.parser_factory(raw_response)
