@@ -4,6 +4,11 @@ from loguru import logger
 from pydantic import BaseModel, ValidationError
 
 from services.client.http_request import HttpRequestService
+from services.client.response_model import (
+    ApiResponseIN,
+    ApiResponseOUT,
+    CleanAndParseStatus,
+)
 from services.digipos.sch_digipos import (
     DGReqSimStatus,
     DGReqUsername,
@@ -52,23 +57,38 @@ class DGCommandServices:
         )
         return raw_response
 
-    async def balance(self, data: DGReqUsername):
-        """Ambil Balance dari Digipos API."""
+    async def balance(self, data: DGReqUsername) -> ApiResponseOUT[BalanceData]:
+        """Ambil Balance dari Digipos API dan clean data."""
         self.auth_service.validate_username(data.username)
-        raw_response = await self.http_service.safe_request(
+
+        # 1. Ambil raw response
+        raw_response: ApiResponseIN = await self.http_service.safe_request(
             method="GET",
             endpoint=self.setting.endpoints.balance,
             params=data.model_dump(),
             debugresponse=data.debug,
         )
-        # cleansing with pydantic model
+
+        # 2. Parse/clean data
         try:
             clean_data = BalanceData.model_validate(raw_response.raw_data)
+            parse_status = CleanAndParseStatus.SUCCESS
+            description = "Data berhasil di-parse"
         except ValidationError as e:
-            clean_data = raw_response.raw_data
-            error_message = f"Error cleansing data: {e}"
+            clean_data = raw_response.raw_data  # fallback: raw
+            parse_status = CleanAndParseStatus.ERROR
+            description = f"Error cleansing data: {e}"
 
-        return raw_response
+        # 3. Bangun output standar
+        return ApiResponseOUT[BalanceData](
+            status_code=raw_response.status_code,
+            url=raw_response.url,
+            debug=raw_response.debug,
+            meta=raw_response.meta,
+            parse=parse_status,
+            cleaned_data=clean_data,
+            description=description,
+        )
 
     async def profile(self, data: DGReqUsername):
         self.auth_service.validate_username(data.username)

@@ -5,6 +5,8 @@ from fastapi import APIRouter, Depends, Query
 from deps.dep_digipos import (
     DepDigiposCommandService,
 )
+from services.client.response_model import ApiResponseOUT
+from services.digipos.command_service import BalanceData
 from services.digipos.sch_digipos import (
     DGReqSimStatus,
     DGReqUsername,
@@ -51,7 +53,7 @@ async def get_verify_otp(
 @router.get(
     "/balance",
     summary="Forward Balance command to Digipos API",
-    response_model=None,
+    response_model=ApiResponseOUT[BalanceData],
     tags=[Tag.digipos_account],
 )
 async def get_balance(
