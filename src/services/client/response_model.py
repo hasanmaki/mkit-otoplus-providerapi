@@ -58,16 +58,11 @@ class ApiResponseOUT[T](ApiShared, BaseModel):
         coerce_numbers_to_str=True,
     )
     parse: CleanAndParseStatus = Field(description="informasi status parsing")
-    cleaned_data: T | None = Field(description="data yang sudah di clean dan di parse")
+    data: T | None = Field(description="data yang sudah di clean dan di parse")
     description: str | None = Field(
         description="placeholder pesan error / informasi lain nya."
     )
 
 
-class APResponseOutError(ApiResponseOUT[None]):
-    pass
-
-
-class ErrorData(BaseModel):  # Simple model for error data
-    error_message: str
-    raw_data: Any
+class ApiErrorParsing(BaseModel):
+    data: Any

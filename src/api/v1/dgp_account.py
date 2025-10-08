@@ -13,7 +13,7 @@ from services.digipos.sch_digipos import (
     DGReqUsnPass,
     DGResBalance,
 )
-from services.parser.parser_utils import ErrorData
+from services.parser.parser_utils import ApiErrorParsing, dict_to_plaintext
 from src.tag import Tags as Tag
 
 router = APIRouter(
@@ -54,15 +54,27 @@ async def get_verify_otp(
 @router.get(
     "/balance",
     summary="Forward Balance command to Digipos API",
-    response_model=ApiResponseOUT[DGResBalance | ErrorData],
+    response_model=ApiResponseOUT[DGResBalance | ApiErrorParsing] | str,
     tags=[Tag.digipos_account],
 )
 async def get_balance(
-    query: Annotated[DGReqUsername, Query()],
+    query: Annotated[
+        DGReqUsername, Query()
+    ],  # Anggap query sekarang punya field 'text'
     service: DepDigiposCommandService,
 ):
-    """Forward `get` balance ke Account Digipos API."""
+    """Forward `get` balance ke Account Digipos API.
+
+    Kontrol output: data murni (tanpa metadata) jika query.text=True.
+    """
     response_model = await service.balance(query)
+
+    text_source = response_model.model_dump()
+    text_response = dict_to_plaintext(text_source)
+
+    # 2. Kontrol output API berdasarkan parameter 'text'
+    if query.text:
+        return text_response
 
     return response_model
 
