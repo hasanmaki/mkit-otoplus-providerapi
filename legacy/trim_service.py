@@ -3,11 +3,7 @@ import re
 from pydantic import BaseModel, Field
 from src.core.sch_response import ApiResponseGeneric
 
-
 # InfoData harus punya 'to' dan 'paket' (list of ProductData)
-class InfoData(BaseModel):
-    to: str
-    paket: list["ProductData"]
 
 
 class ProductData(BaseModel):
@@ -64,6 +60,11 @@ class ProductData(BaseModel):
         val = re.sub(r"^\s*,\s*", "", val)
         val = re.sub(r"\s*,\s*$", "", val)
         return val.strip()
+
+
+class InfoData(BaseModel):
+    to: str
+    paket: list["ProductData"]
 
 
 class ProductListResponse(ApiResponseGeneric[InfoData]):

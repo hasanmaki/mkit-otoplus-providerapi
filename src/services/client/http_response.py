@@ -2,23 +2,40 @@ from typing import Any
 
 import httpx
 from loguru import logger
+from pydantic import BaseModel, Field
 
 from services.client.sch_response import ResponseMessage
 from utils.log_utils import logger_wraps, timeit
 
 
+class ApiRawResponse(BaseModel):
+    """Kontrak respons mentah yang jelas, siap dikonsumsi layer 1."""
+
+    # Field top-level
+    url: str
+    path: str | None
+    status_code: int
+
+    # Meta tambahan (non-duplikat)
+    meta: dict[str, Any] = Field(default_factory=dict)
+
+    # Data parsed dari body
+    data: Any
+
+    # Deskripsi status / error handling
+    description: str = "httpx.resp to layer 1 ok"
+
+
 class HttpResponseService:
-    """Parser utama untuk mengubah httpx.Response → dict(meta, data)."""
+    """Parser utama: httpx.Response → ApiRawResponse."""
 
     def __init__(self, resp: httpx.Response, debug: bool = False):
         self.resp = resp
         self.debug = debug
         self.last_error: str | None = None
 
-    # ============================================================
-    #  PURE PARSER HELPERS
-    # ============================================================
-    def _try_parse_json(self) -> tuple[ResponseMessage, dict[str, Any] | Any]:
+    # ------------------ Pure parser helpers ------------------
+    def _try_parse_json(self) -> tuple[str, dict[str, Any] | Any]:
         try:
             body = self.resp.json()
         except Exception as e:
@@ -30,21 +47,18 @@ class HttpResponseService:
             return ResponseMessage.LIST, {"items": body, "count": len(body)}
         return ResponseMessage.PRIMITIVE, {"raw": body}
 
-    def _try_parse_text(self) -> tuple[ResponseMessage, dict[str, Any]]:
+    def _try_parse_text(self) -> tuple[str, dict[str, Any]]:
         text = (self.resp.text or "").strip()
         if not text:
             return ResponseMessage.EMPTY, {"raw": None}
         return ResponseMessage.TEXT, {"raw": text}
 
-    # ============================================================
-    #  MAIN PARSER LOGIC
-    # ============================================================
+    # ------------------ Main parser ------------------
     @timeit
-    def parse_body(self) -> tuple[ResponseMessage, dict[str, Any] | Any]:
+    def parse_body(self) -> tuple[str, dict[str, Any] | Any]:
         """Fallback chain: JSON → TEXT → ERROR."""
         content_type = (self.resp.headers.get("content-type") or "").lower()
 
-        # Berdasarkan Content-Type
         try:
             if "json" in content_type:
                 return self._try_parse_json()
@@ -53,34 +67,36 @@ class HttpResponseService:
         except Exception as e:
             self.last_error = f"Parsing failed ({content_type}): {e}"
 
-        # Fallback ke JSON → TEXT universal
+        # fallback universal
         for parser in (self._try_parse_json, self._try_parse_text):
             try:
                 return parser()
             except Exception as e:
                 self.last_error = str(e)
 
-        # Gagal total
+        # gagal total
         return ResponseMessage.ERROR, {
             "error": self.last_error or "Unknown parsing error",
-            "raw": self.resp.text[:500]
-            if self.resp.text
-            else None,  # kasih potongan isi
+            "raw": self.resp.text[:500] if self.resp.text else None,
         }
 
-    # ============================================================
-    #  META HELPERS
-    # ============================================================
+    # ------------------ Meta helpers ------------------
     def _get_core_meta(self) -> dict[str, Any]:
         resp = self.resp
         return {
+            "reason_phrase": resp.reason_phrase,
+            "elapsed_time_s": getattr(
+                getattr(resp, "elapsed", None), "total_seconds", lambda: None
+            )(),
+            "content_type": resp.headers.get("content-type"),
+        }
+
+    def _get_api_raw_response_fields(self) -> dict[str, Any]:
+        resp = self.resp
+        return {
             "url": str(resp.url),
-            "host": getattr(resp.url, "host", None),
             "path": getattr(resp.url, "path", None),
             "status_code": resp.status_code,
-            "reason_phrase": resp.reason_phrase,
-            "elapsed_time_s": getattr(resp.elapsed, "total_seconds", lambda: None)(),
-            "content_type": resp.headers.get("content-type"),
         }
 
     def _get_debug_meta(self) -> dict[str, Any]:
@@ -94,34 +110,47 @@ class HttpResponseService:
             "response_cookies": dict(resp.cookies),
         }
 
-    # ============================================================
-    #  PUBLIC API
-    # ============================================================
+    # ------------------ Public API ------------------
     @logger_wraps(level="DEBUG")
     @timeit
-    def to_dict(self) -> dict[str, Any]:
-        """Return dict(meta, data) siap dipakai service layer."""
+    def to_dict(self) -> ApiRawResponse:
+        # top-level fields
+        top_fields = self._get_api_raw_response_fields()
+
+        # meta
         meta = self._get_core_meta()
         if self.debug:
             meta.update(self._get_debug_meta())
 
+        # parse body
         body_type, parsed_data = self.parse_body()
         meta["body_type"] = body_type
-        logger.debug(f"the mode: -> {self.debug}")
-        return {"meta": meta, "data": parsed_data}
+
+        # deskripsi status
+        if body_type == ResponseMessage.ERROR:
+            description = self.last_error or "Unknown parsing error"
+            # pindahkan info top-level ke parsed_data agar tidak hilang
+            parsed_data.update(top_fields)
+        else:
+            description = "httpx.resp to layer 1 ok"
+
+        logger.debug(f"Parsing mode debug={self.debug}, body_type={body_type}")
+
+        return ApiRawResponse(
+            **top_fields,
+            meta=meta,
+            data=parsed_data,
+            description=description,
+        )
 
 
-# ============================================================
-#  FACTORY CLASS + WRAPPER FUNCTION
-# ============================================================
 class ResponseParserFactory:
     """Factory agar bisa diinject via dependency FastAPI."""
 
     def __init__(self, parser_cls: type[HttpResponseService] = HttpResponseService):
         self.parser_cls = parser_cls
 
-    def __call__(self, resp: httpx.Response, debug: bool = False) -> dict[str, Any]:
-        """Callable agar bisa langsung dipakai di service layer."""
+    def __call__(self, resp: httpx.Response, debug: bool = False) -> ApiRawResponse:
         return self.parser_cls(resp, debug).to_dict()
 
 
@@ -129,4 +158,4 @@ def response_to_dict(
     resp: httpx.Response, debugresponse: bool = False
 ) -> dict[str, Any]:
     """Wrapper simple (non-DI usecase)."""
-    return HttpResponseService(resp, debugresponse).to_dict()
+    return HttpResponseService(resp, debugresponse).to_dict().model_dump()

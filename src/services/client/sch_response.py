@@ -1,4 +1,7 @@
 from enum import StrEnum
+from typing import Any
+
+from pydantic import BaseModel
 
 
 class ResponseMessage(StrEnum):
@@ -10,3 +13,11 @@ class ResponseMessage(StrEnum):
     PRIMITIVE = "PRIMITIVE"
     EMPTY = "EMPTY"
     ERROR = "ERROR"
+
+
+class ApiRawResponse(BaseModel):
+    url: str
+    path: str
+    status_code: int
+    meta: dict[str, Any] = {}
+    data: Any

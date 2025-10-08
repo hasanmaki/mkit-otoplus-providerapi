@@ -58,7 +58,6 @@ class DGCommandServices:
 
         meta, body = raw_response["meta"], raw_response.get("data")
 
-        # Tinggal panggil parser sesuai endpoint
         return parse_balance_data(meta, body)
 
     async def profile(self, data: DGReqUsername):
