@@ -1,6 +1,7 @@
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, Query
+from fastapi.responses import PlainTextResponse
 
 from deps.dep_digipos import (
     DepDigiposCommandService,
@@ -55,6 +56,7 @@ async def get_verify_otp(
     summary="Forward Balance command to Digipos API",
     response_model=ApiResponseOUT[BalanceData],
     tags=[Tag.digipos_account],
+    response_class=PlainTextResponse,
 )
 async def get_balance(
     query: Annotated[DGReqUsername, Query()],
@@ -62,7 +64,7 @@ async def get_balance(
 ):
     """Forward `get` balance ke Account Digipos API."""
     response_model = await service.balance(query)
-    return response_model
+    return PlainTextResponse(response_model)
 
 
 @router.get(

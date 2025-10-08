@@ -1,7 +1,7 @@
 from enum import StrEnum
 from typing import Any
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class ResponseMessage(StrEnum):
@@ -47,10 +47,15 @@ class ApiResponseOUT[T](ApiShared, BaseModel):
     data akan terisi oleh hasil preprosesing / raw. jika gagal parse.
     """
 
-    parse: CleanAndParseStatus = Field(description="informasi status parsing")
-    data: T | None = Field(
-        description="data yang sudah di clean dan di parse", alias="cleaned_data"
+    model_config = ConfigDict(
+        extra="forbid",
+        validate_assignment=True,
+        use_enum_values=True,
+        populate_by_name=True,
+        coerce_numbers_to_str=True,
     )
+    parse: CleanAndParseStatus = Field(description="informasi status parsing")
+    cleaned_data: T | None = Field(description="data yang sudah di clean dan di parse")
     description: str | None = Field(
         description="placeholder pesan error / informasi lain nya."
     )
