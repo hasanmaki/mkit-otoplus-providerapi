@@ -1,9 +1,9 @@
 """bussines logic for digipos."""
 
 from loguru import logger
+from pydantic import BaseModel, ValidationError
 
 from services.client.http_request import HttpRequestService
-from services.digipos.digipos_parser import parse_balance_data
 from services.digipos.sch_digipos import (
     DGReqSimStatus,
     DGReqUsername,
@@ -12,6 +12,12 @@ from services.digipos.sch_digipos import (
 )
 from src.config.settings import DigiposConfig
 from src.services.digipos.auth_service import DigiposAuthService
+
+
+class BalanceData(BaseModel):
+    ngrs: dict[str, str]
+    linkaja: str
+    finpay: str
 
 
 class DGCommandServices:
@@ -55,10 +61,14 @@ class DGCommandServices:
             params=data.model_dump(),
             debugresponse=data.debug,
         )
+        # cleansing with pydantic model
+        try:
+            clean_data = BalanceData.model_validate(raw_response.raw_data)
+        except ValidationError as e:
+            clean_data = raw_response.raw_data
+            error_message = f"Error cleansing data: {e}"
 
-        meta, body = raw_response["meta"], raw_response.get("data")
-
-        return parse_balance_data(meta, body)
+        return raw_response
 
     async def profile(self, data: DGReqUsername):
         self.auth_service.validate_username(data.username)
