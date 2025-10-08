@@ -2,8 +2,8 @@
 
 from loguru import logger
 
-from core.client.service_parser import response_to_dict
-from core.client.service_request import HttpClientService
+from services.client.http_request import HttpClientService
+from services.client.http_response import response_to_dict
 from services.digipos.digipos_parser import parse_balance_data
 from services.digipos.sch_digipos import (
     DGReqSimStatus,
