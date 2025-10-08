@@ -12,7 +12,7 @@ from typing import Any
 
 import httpx
 
-from services.client.sch_response import ApiResponseIN, ResponseMessage
+from services.client.response_model import ApiResponseIN, ResponseMessage
 from utils.log_utils import logger_wraps, timeit
 
 
