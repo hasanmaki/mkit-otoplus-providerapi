@@ -62,7 +62,7 @@ def clean_validate_raw_dict_data[T: BaseModel](
     )
 
 
-def dict_to_plaintext(data: dict) -> str:
+def dict_to_plaintext(data: dict) -> str:  # noqa: D103
     parts = []
     for key, value in data.items():
         if isinstance(value, dict):

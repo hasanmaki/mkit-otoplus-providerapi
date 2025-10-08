@@ -64,9 +64,9 @@ async def get_balance(
     """Forward `get` balance ke Account Digipos API."""
     response_model = await service.balance(query)
     if query.debug:
-        response_model.model_dump_json()
-
-    return dict_to_plaintext(response_model.model_dump())
+        final_response = response_model.model_dump_json()
+    final_response = dict_to_plaintext(response_model.model_dump())
+    return final_response
 
 
 @router.get(

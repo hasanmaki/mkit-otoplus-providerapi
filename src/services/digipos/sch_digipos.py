@@ -1,6 +1,6 @@
 """schmeas for digipos."""
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class DGReqUsername(BaseModel):
@@ -21,6 +21,7 @@ class DGReqSimStatus(DGReqUsername):
 
 
 class DGResBalance(BaseModel):
-    ngrs: dict[str, str]
-    linkaja: str
-    finpay: str
+    model_config = ConfigDict(extra="allow", strict=False)
+    ngrs: dict[str, str] | None
+    linkaja: str | None
+    finpay: str | None

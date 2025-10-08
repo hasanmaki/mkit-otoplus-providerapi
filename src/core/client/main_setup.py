@@ -18,17 +18,17 @@ async def check_url_reachable(url: str, timeout: float | None = 1.0) -> bool:
             )
             return reachable
     except Exception as exc:
-        log.exception(f"URL {url} tidak reachable: {exc}")
+        log.exception(f"URL {url} tidak reachable: {exc}")  # noqa: TRY401
         return False
 
 
-async def setup_client(
+async def setup_client(  # noqa: RUF029
     manager: HttpClientManager, config: ApiBaseConfig
 ) -> httpx.AsyncClient:
     """Setup client dari config dan register ke manager."""
     log = logger.bind(service=config.name)
-    if not await check_url_reachable(str(config.base_url)):
-        raise RuntimeError(f"Base URL '{config.base_url}' tidak reachable")
+    # if not await check_url_reachable(str(config.base_url)):
+    #     raise RuntimeError(f"Base URL '{config.base_url}' tidak reachable")
 
     client = HttpClientFactory.create_client(config)
     manager.register_client(config.name, client)

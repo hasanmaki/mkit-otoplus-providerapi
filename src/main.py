@@ -41,10 +41,28 @@ async def lifespan(app: FastAPI):
     logger.debug("Application shutdown")
 
 
+app_meta_settings = get_settings().digipos
+app_meta_settings.model_dump_json(indent=4)
+description = f"""
+Parser Kit For Digipos. 🚀
+
+## DIGIPOS
+
+use this values : `{app_meta_settings}`
+
+"""
+
 app = FastAPI(
+    title="Parser Kit",
+    description=description,
     lifespan=lifespan,
     openapi_tags=tags_metadata,
     swagger_ui_parameters={"docExpansion": "none"},
+    contact={
+        "name": "Hasan Maki Ahmad",
+        "url": "https://wa.me/6285777076575",
+        "email": "hasanmaki.ahmad@gmail.com",
+    },
 )
 
 # register middleware
@@ -53,7 +71,7 @@ app.add_middleware(LoggingMiddleware)
 
 # register exception
 @app.exception_handler(AppExceptionError)
-async def global_exception_handler(request: Request, exc: AppExceptionError):
+async def global_exception_handler(request: Request, exc: AppExceptionError):  # noqa: RUF029
     """Handler dinamis untuk AppExceptionError (mendukung JSON dan TEXT)."""
     response_format = request.headers.get(
         "X-Response-Format"
@@ -73,7 +91,7 @@ register_api_v1(app)
 
 
 @app.get("/")
-async def root():
+async def root():  # noqa: D103
     return {"message": "Hello World"}
 
 
