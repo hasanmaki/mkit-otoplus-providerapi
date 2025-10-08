@@ -11,6 +11,7 @@ and provides debugging options for detailed request/response information.
 from typing import Any
 
 import httpx
+from loguru import logger
 
 from services.client.response_model import ApiResponseIN, ResponseMessage
 from utils.log_utils import timeit
@@ -34,6 +35,9 @@ class HttpResponseService:
         self.resp = resp
         self.debug = debug
         self.last_error: str | None = None
+        self.log = logger.bind(
+            debug=debug, url=self.resp.url.host, path=self.resp.url.path
+        )
 
     def _try_parse_json(self) -> tuple[str, Any]:
         """Inner Parser Helper: Parses the response body as JSON.
@@ -161,7 +165,7 @@ class HttpResponseService:
         """
         response_type, parsed_data = self.parse_body()
         meta = self._get_flat_meta(response_type)
-
+        self.log.debug(f"returning raw data: -> {parsed_data}")
         return ApiResponseIN(
             status_code=self.resp.status_code,
             url=str(self.resp.url.host),
