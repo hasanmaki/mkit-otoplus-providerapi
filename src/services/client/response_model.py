@@ -65,3 +65,8 @@ class ApiResponseOUT[T](ApiShared, BaseModel):
 
 class APResponseOutError(ApiResponseOUT[None]):
     pass
+
+
+class ErrorData(BaseModel):  # Simple model for error data
+    error_message: str
+    raw_data: Any

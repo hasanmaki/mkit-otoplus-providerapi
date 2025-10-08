@@ -1,4 +1,4 @@
-from typing import Any, TypeVar
+from typing import TypeVar
 
 from loguru import logger
 from pydantic import BaseModel, ValidationError
@@ -7,14 +7,9 @@ from services.client.response_model import (
     ApiResponseIN,
     ApiResponseOUT,
     CleanAndParseStatus,
+    ErrorData,
 )
 from utils.log_utils import timeit
-
-
-class ErrorData(BaseModel):  # Simple model for error data
-    error_message: str
-    raw_data: Any
-
 
 T = TypeVar("T", bound=BaseModel)
 

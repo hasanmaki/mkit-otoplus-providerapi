@@ -13,6 +13,7 @@ from services.digipos.sch_digipos import (
     DGReqUsnPass,
     DGResBalance,
 )
+from services.parser.parser_utils import ErrorData
 from src.tag import Tags as Tag
 
 router = APIRouter(
@@ -53,7 +54,7 @@ async def get_verify_otp(
 @router.get(
     "/balance",
     summary="Forward Balance command to Digipos API",
-    response_model=ApiResponseOUT[DGResBalance],
+    response_model=ApiResponseOUT[DGResBalance | ErrorData],
     tags=[Tag.digipos_account],
 )
 async def get_balance(
