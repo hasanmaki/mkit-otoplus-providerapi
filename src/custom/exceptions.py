@@ -66,3 +66,9 @@ class ExternalAPIError(HttpResponseError):
     """Error dari API eksternal."""
 
     default_message: str = "External API returned an error."
+
+
+class ParserProsessGenericError(AppExceptionError):
+    """here happening in parser proses."""
+
+    default_message: str = "check the module that proses the raw parser and cleaner."

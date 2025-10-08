@@ -13,7 +13,7 @@ from typing import Any
 import httpx
 
 from services.client.response_model import ApiResponseIN, ResponseMessage
-from utils.log_utils import logger_wraps, timeit
+from utils.log_utils import timeit
 
 
 class HttpResponseService:
@@ -148,7 +148,6 @@ class HttpResponseService:
         })
         return meta
 
-    @logger_wraps(level="DEBUG")
     @timeit
     def to_dict(self) -> ApiResponseIN:
         """Public API: Converts the HTTP response to an ApiResponseIN object.
