@@ -23,6 +23,7 @@ def clean_validate_raw_dict_data[T: BaseModel](
         return ApiResponseOUT[T | ErrorData](  # change return type
             status_code=raw_response.status_code,
             url=raw_response.url,
+            path=raw_response.path,
             debug=raw_response.debug,
             meta=raw_response.meta.copy() if raw_response.meta else None,
             parse=CleanAndParseStatus.SKIPPED,
@@ -51,6 +52,7 @@ def clean_validate_raw_dict_data[T: BaseModel](
         return ApiResponseOUT[T | ErrorData](  # change return type
             status_code=raw_response.status_code,
             url=raw_response.url,
+            path=raw_response.path,
             debug=raw_response.debug,
             meta=raw_response.meta.copy() if raw_response.meta else None,
             parse=parse_status,
@@ -61,6 +63,7 @@ def clean_validate_raw_dict_data[T: BaseModel](
     return ApiResponseOUT[T | ErrorData](  # change return type
         status_code=raw_response.status_code,
         url=raw_response.url,
+        path=raw_response.path,
         debug=raw_response.debug,
         meta=raw_response.meta.copy() if raw_response.meta else None,
         parse=parse_status,

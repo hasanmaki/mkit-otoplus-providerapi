@@ -127,29 +127,29 @@ class HttpResponseService:
         Returns:
             dict[str, Any]: A dictionary containing the extracted metadata.
         """
+        if not self.debug:
+            return {"with_meta": False}
+        # debug mode lengkap.
         resp = self.resp
         req = getattr(resp, "request", None)
+
         meta = {
-            "status_code": resp.status_code,
+            "with_meta": True,
             "elapsed_time_s": getattr(
                 getattr(resp, "elapsed", None), "total_seconds", lambda: None
             )(),
-            "content_type": resp.headers.get("content-type"),
-        }
-        if self.debug:
-            meta.update({
-                "request_headers": dict(getattr(req, "headers", {})) if req else {},
-                "response_headers": dict(resp.headers),
-                "url": str(resp.url),
-                "path": getattr(resp.url, "path", None),
-            })
-        # optional info yang sebelumnya ada sebagai field
-        meta.update({
+            "request_headers": dict(getattr(req, "headers", {})) if req else {},
+            "response_headers": dict(resp.headers),
+            "path": getattr(resp.url, "path", None),
+            "method": getattr(req, "method", None) if req else None,
+            "trace_id": resp.headers.get("x-trace-id"),
+            "request_id": resp.headers.get("x-request-id"),
             "response_type": response_type,
             "description": self.last_error
             if response_type == ResponseMessage.ERROR
             else "ok",
-        })
+        }
+
         return meta
 
     @timeit
@@ -169,6 +169,7 @@ class HttpResponseService:
         return ApiResponseIN(
             status_code=self.resp.status_code,
             url=str(self.resp.url.host),
+            path=str(self.resp.url.path),
             debug=self.debug,
             meta=meta,
             raw_data=parsed_data,

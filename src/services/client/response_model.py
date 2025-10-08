@@ -29,6 +29,7 @@ class ApiShared(BaseModel):
 
     status_code: int = Field(description="status code dari API / Layanan.")
     url: str = Field(description="urlapi tanpa query(sensitive data)")
+    path: str = Field(description="path parameters")
     debug: bool = Field(description="debug mode tracking")
     meta: dict[str, Any] | None = Field(
         description="jika debug mode, ini akan berisi header lengkap dan data lainya"
