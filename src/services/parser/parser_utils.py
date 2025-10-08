@@ -23,6 +23,8 @@ def clean_validate_raw_dict_data[T: BaseModel](
     - raw_response: ApiResponseIN
     - target_model: Optional Pydantic model
     Returns: ApiResponseOUT[T] dengan type-safe cleaned_data
+    kalau model lain belum ada model :
+    call : clean_validate_raw_dict_data(raw_response)
     """
     if target_model is None:
         return ApiResponseOUT[T | Any](
