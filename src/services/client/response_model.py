@@ -1,7 +1,9 @@
 from enum import StrEnum
-from typing import Any
+from typing import Any, TypeVar
 
 from pydantic import BaseModel, ConfigDict, Field
+
+T = TypeVar("T", bound=BaseModel)
 
 
 class ResponseMessage(StrEnum):
@@ -59,3 +61,7 @@ class ApiResponseOUT[T](ApiShared, BaseModel):
     description: str | None = Field(
         description="placeholder pesan error / informasi lain nya."
     )
+
+
+class APResponseOutError(ApiResponseOUT[None]):
+    pass

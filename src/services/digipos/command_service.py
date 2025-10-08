@@ -1,28 +1,22 @@
 """bussines logic for digipos."""
 
 from loguru import logger
-from pydantic import BaseModel, ValidationError
 
 from services.client.http_request import HttpRequestService
 from services.client.response_model import (
     ApiResponseIN,
     ApiResponseOUT,
-    CleanAndParseStatus,
 )
 from services.digipos.sch_digipos import (
     DGReqSimStatus,
     DGReqUsername,
     DGReqUsnOtp,
     DGReqUsnPass,
+    DGResBalance,
 )
+from services.parser.parser_utils import clean_validate_raw_dict_data
 from src.config.settings import DigiposConfig
 from src.services.digipos.auth_service import DigiposAuthService
-
-
-class BalanceData(BaseModel):
-    ngrs: dict[str, str]
-    linkaja: str
-    finpay: str
 
 
 class DGCommandServices:
@@ -57,7 +51,7 @@ class DGCommandServices:
         )
         return raw_response
 
-    async def balance(self, data: DGReqUsername) -> ApiResponseOUT[BalanceData]:
+    async def balance(self, data: DGReqUsername) -> ApiResponseOUT[DGResBalance]:
         """Ambil Balance dari Digipos API dan clean data."""
         self.auth_service.validate_username(data.username)
 
@@ -68,27 +62,8 @@ class DGCommandServices:
             params=data.model_dump(),
             debugresponse=data.debug,
         )
-
-        # 2. Parse/clean data
-        try:
-            clean_data = BalanceData.model_validate(raw_response.raw_data)
-            parse_status = CleanAndParseStatus.SUCCESS
-            description = "Data berhasil di-parse"
-        except ValidationError as e:
-            clean_data = raw_response.raw_data  # fallback: raw
-            parse_status = CleanAndParseStatus.ERROR
-            description = f"Error cleansing data: {e}"
-
-        # 3. Bangun output standar
-        return ApiResponseOUT[BalanceData](
-            status_code=raw_response.status_code,
-            url=raw_response.url,
-            debug=raw_response.debug,
-            meta=raw_response.meta,
-            parse=parse_status,
-            cleaned_data=clean_data,
-            description=description,
-        )
+        final_response = clean_validate_raw_dict_data(raw_response, DGResBalance)
+        return final_response
 
     async def profile(self, data: DGReqUsername):
         self.auth_service.validate_username(data.username)

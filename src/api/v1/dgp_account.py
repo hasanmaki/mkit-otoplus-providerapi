@@ -1,18 +1,17 @@
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, Query
-from fastapi.responses import PlainTextResponse
 
 from deps.dep_digipos import (
     DepDigiposCommandService,
 )
 from services.client.response_model import ApiResponseOUT
-from services.digipos.command_service import BalanceData
 from services.digipos.sch_digipos import (
     DGReqSimStatus,
     DGReqUsername,
     DGReqUsnOtp,
     DGReqUsnPass,
+    DGResBalance,
 )
 from src.tag import Tags as Tag
 
@@ -54,9 +53,8 @@ async def get_verify_otp(
 @router.get(
     "/balance",
     summary="Forward Balance command to Digipos API",
-    response_model=ApiResponseOUT[BalanceData],
+    response_model=ApiResponseOUT[DGResBalance],
     tags=[Tag.digipos_account],
-    response_class=PlainTextResponse,
 )
 async def get_balance(
     query: Annotated[DGReqUsername, Query()],
@@ -64,7 +62,7 @@ async def get_balance(
 ):
     """Forward `get` balance ke Account Digipos API."""
     response_model = await service.balance(query)
-    return PlainTextResponse(response_model)
+    return response_model
 
 
 @router.get(
