@@ -32,7 +32,18 @@ class AppExceptionError(Exception):
         return data
 
 
-# --- HTTP / Connection Errors ---
+class ClientNotFoundError(AppExceptionError):
+    """Raised when trying to get unregistered client."""
+
+    default_message: str = "Error : Client Unregisters"
+
+
+class ClientAlreadyRegisteredError(AppExceptionError):
+    """Raised when trying to register duplicate client."""
+
+    default_message: str = "Error : Duplicate Client."
+
+
 class HttpResponseError(AppExceptionError):
     """Error untuk kode status HTTP 4xx/5xx."""
 

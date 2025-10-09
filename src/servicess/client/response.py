@@ -4,7 +4,7 @@ from typing import Any
 import httpx
 from loguru import logger
 
-from services.client.model import ApiResponseIN, ResponseType
+from servicess.client.model import ApiResponseIN, ResponseType
 from src.custom.exceptions import HttpResponseError
 from utils.log_utils import timeit
 

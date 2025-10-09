@@ -5,15 +5,15 @@ from fastapi import APIRouter, Depends, Query
 from deps.dep_digipos import (
     DepDigiposCommandService,
 )
-from services.client.depre_cated_response_model import ApiResponseOUT
-from services.digipos.sch_digipos import (
+from servicess.client.depre_cated_response_model import ApiResponseOUT
+from servicess.digipos.sch_digipos import (
     DGReqSimStatus,
     DGReqUsername,
     DGReqUsnOtp,
     DGReqUsnPass,
     DGResBalance,
 )
-from services.parser.parser_utils import ApiErrorParsing, dict_to_plaintext
+from servicess.parser.parser_utils import ApiErrorParsing, dict_to_plaintext
 from src.tag import Tags as Tag
 
 router = APIRouter(

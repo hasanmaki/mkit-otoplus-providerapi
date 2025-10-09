@@ -3,7 +3,7 @@ from typing import Any
 import httpx
 from loguru import logger
 
-from services.client.response import ResponseType
+from servicess.client.response import ResponseType
 from src.custom.exceptions import HTTPConnectionError, HttpResponseError
 
 

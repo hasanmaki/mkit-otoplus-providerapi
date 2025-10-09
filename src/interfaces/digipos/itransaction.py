@@ -1,1 +1,0 @@
-"""interfacse untuk transaksasi."""

@@ -1,17 +1,15 @@
 import httpx
 from httpx import AsyncClient
 from loguru import logger
-from src.config.client_config import ClientBaseConfig
 
 from infra.clients.factory import HttpClientFactory
-from infra.clients.utils import check_url_reachable
+from src.config.client_config import ClientBaseConfig
 
 
 class HttpClientManager:
     """Registry & lifecycle manager untuk semua AsyncClient."""
 
     def __init__(self, factory: HttpClientFactory) -> None:
-        # Inisialisasi dengan Factory untuk DECOUPLING (injeksi)
         self._clients: dict[str, AsyncClient] = {}
         self._factory = factory
         self.log = logger.bind(service="HttpClientManager")
@@ -24,18 +22,14 @@ class HttpClientManager:
         self.log.debug(f"Client '{name}' registered successfully.")
 
     async def setup_and_register_client(
-        self, config: ClientBaseConfig, check_url: bool = False
+        self,
+        config: ClientBaseConfig,
     ) -> httpx.AsyncClient:
         """Setup client dari config, melakukan check, dan register ke manager."""
         log = self.log.bind(client_name=config.name)
-        if check_url and not await check_url_reachable(str(config.base_url)):
-            log.error(f"Base URL '{config.base_url}' tidak reachable")
-            raise RuntimeError(f"Base URL '{config.base_url}' tidak reachable")
 
-        # 2. Create client menggunakan Factory yang diinjeksikan
         client = self._factory.create_client(config)
 
-        # 3. Register
         self._register_client(config.name, client)
 
         log.success(f"Client '{config.name}' initialized with base={config.base_url}")

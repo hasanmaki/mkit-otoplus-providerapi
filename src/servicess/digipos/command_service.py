@@ -2,21 +2,21 @@
 
 from loguru import logger
 
-from services.client.depre_cated_response_model import (
+from servicess.client.depre_cated_response_model import (
     ApiResponseIN,
     ApiResponseOUT,
 )
-from services.client.request import HttpRequestService
-from services.digipos.sch_digipos import (
+from servicess.client.request import HttpRequestService
+from servicess.digipos.sch_digipos import (
     DGReqSimStatus,
     DGReqUsername,
     DGReqUsnOtp,
     DGReqUsnPass,
     DGResBalance,
 )
-from services.parser.parser_utils import clean_validate_raw_dict_data
+from servicess.parser.parser_utils import clean_validate_raw_dict_data
 from src.core.config.cfg_api_clients import DigiposConfig
-from src.services.digipos.auth_service import DigiposAuthService
+from src.servicess.digipos.auth_service import DigiposAuthService
 
 
 class DGCommandServices:

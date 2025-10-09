@@ -3,7 +3,7 @@ from typing import Annotated
 
 
 from src.core.client.base_manager import HttpClientManager
-from services.client.response import ResponseHandlerFactory
+from servicess.client.response import ResponseHandlerFactory
 from fastapi import Depends, Request
 from httpx import AsyncClient
 
