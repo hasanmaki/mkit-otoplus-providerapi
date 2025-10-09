@@ -1,15 +1,14 @@
 from httpx import AsyncClient, Limits
 from httpx_retries import Retry, RetryTransport
 from loguru import logger
-
-from src.core.config.cfg_api_clients import ApiBaseConfig
+from src.config.client_config import ClientBaseConfig
 
 
 class HttpClientFactory:
     """Factory untuk membuat AsyncClient siap pakai dari config."""
 
     @staticmethod
-    def create_client(config: ApiBaseConfig) -> AsyncClient:
+    def create_client(config: ClientBaseConfig) -> AsyncClient:
         log = logger.bind(service="HttpClientFactory")
 
         # Setup retry strategy

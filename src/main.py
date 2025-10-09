@@ -6,10 +6,10 @@ from fastapi.responses import JSONResponse, PlainTextResponse
 from loguru import logger
 
 from src.api import register_api_v1
-from src.config.cfg_logging import setup_logging
-from src.config.settings import get_settings
 from src.core.client.base_manager import HttpClientManager
 from src.core.client.main_setup import setup_client
+from src.core.config.cfg_logging import setup_logging
+from src.core.config.settings import get_settings
 from src.custom.exceptions import AppExceptionError
 from src.custom.middlewares import LoggingMiddleware
 from src.tag import tags_metadata

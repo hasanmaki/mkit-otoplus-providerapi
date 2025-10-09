@@ -3,7 +3,7 @@ from loguru import logger
 
 from core.client.base_factory import HttpClientFactory
 from core.client.base_manager import HttpClientManager
-from src.config.cfg_api_clients import ApiBaseConfig
+from src.core.config.cfg_api_clients import ApiBaseConfig
 
 
 async def check_url_reachable(url: str, timeout: float | None = 1.0) -> bool:
