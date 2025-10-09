@@ -6,16 +6,26 @@ handlers:
     diagnose: true
     backtrace: true
     level: DEBUG
-  # - sink: ./logs/file.log
-  #   format: "{time:YYYY-MM-DD HH:mm:ss}<level>{level:}</>.{name:}.{function:}.{line:}.{message}"
-  #   level: INFO
-  #   colorize: false
-  #   serialize: true
-  # - sink: ./logs/error.log
-  #   format: "{time:YYYY-MM-DD HH:mm:ss}<level>{level:}</>.{name:}.{function:}.{line:}.{message}"
-  #   level: ERROR
-  #   colorize: false
-  #   serialize: true
+  - sink: ./logs/file.log
+    format: "{time:YYYY-MM-DD HH:mm:ss}<level>{level:}</>.{name:}.{function:}.{line:}.{message}"
+    level: INFO
+    colorize: false
+    serialize: true
+  - sink: ./logs/error.log
+    format: "{time:YYYY-MM-DD HH:mm:ss}<level>{level:}</>.{name:}.{function:}.{line:}.{message}"
+    level: ERROR
+    colorize: false
+    serialize: true
+  - sink: ./logs/metrics.log # File log terpisah untuk metrik
+    format: "{time:YYYY-MM-DD HH:mm:ss}|{level}|{extra[metric_name]}|{extra[value]}"
+    level: DEBUG
+    filter:
+      - "not METRIC"
+    colorize: false
+    serialize: true
+    enqueue: true
+    diagnose: true
+    backtrace: true
 levels:
   - name: MATRIX
     "no": 13
