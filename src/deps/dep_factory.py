@@ -3,11 +3,11 @@ from typing import Annotated
 
 
 from src.core.client.base_manager import HttpClientManager
-from src.services.client.http_response import ResponseHandlerFactory
+from services.client.response import ResponseHandlerFactory
 from fastapi import Depends, Request
 from httpx import AsyncClient
 
-from src.config.settings import AppSettings
+from src.core.config.settings import AppSettings
 
 
 async def get_appsettings(request: Request) -> AppSettings:

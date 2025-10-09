@@ -1,7 +1,7 @@
 import httpx
 from loguru import logger
 
-from services.client.http_response import ResponseHandlerFactory
+from services.client.response import ResponseHandlerFactory
 from src.custom.exceptions import (
     HTTPConnectionError,
     HttpResponseError,

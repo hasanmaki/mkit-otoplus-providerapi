@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, Query
 from deps.dep_digipos import (
     DepDigiposCommandService,
 )
-from services.client.response_model import ApiResponseOUT
+from services.client.depre_cated_response_model import ApiResponseOUT
 from services.digipos.sch_digipos import (
     DGReqSimStatus,
     DGReqUsername,

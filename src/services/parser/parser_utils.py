@@ -3,7 +3,7 @@ from typing import TypeVar
 from loguru import logger
 from pydantic import BaseModel, ValidationError
 
-from services.client.response_model import (
+from services.client.depre_cated_response_model import (
     ApiErrorParsing,
     ApiResponseIN,
     ApiResponseOUT,
