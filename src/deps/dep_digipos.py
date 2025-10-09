@@ -20,21 +20,22 @@ from typing import Annotated
 from fastapi import Depends
 from httpx import AsyncClient
 
-from services.client.http_request import HttpRequestService
-from services.client.http_response import ResponseHandlerFactory
-from src.config.settings import AppSettings, DigiposConfig
+from src.core.config.cfg_api_clients import DigiposConfig
+from src.core.config.settings import AppSettings
 from src.deps.dep_factory import (
     client_factory,
     get_appsettings,
     get_response_parser_factory,
 )
+from src.services.client.http_request import HttpRequestService
+from src.services.client.http_response import ResponseHandlerFactory
 from src.services.digipos.auth_service import DigiposAuthService
 from src.services.digipos.command_service import DGCommandServices
 
 
 def get_digipos_config(
     settings: AppSettings = Depends(get_appsettings),
-) -> DigiposConfig:
+) -> AppSettings:
     """Ambil config Digipos dari AppSettings."""
     return settings.digipos
 
@@ -42,11 +43,11 @@ def get_digipos_config(
 def get_digipos_http_service(
     client: AsyncClient = Depends(client_factory(lambda s: s.digipos)),
     config: DigiposConfig = Depends(get_digipos_config),
-    parser_factory: ResponseHandlerFactory = Depends(get_response_parser_factory),
-) -> HttpRequestService:
+    response_handler: ResponseHandlerFactory = Depends(get_response_parser_factory),
+):
     """Generate HttpClientService khusus Digipos."""
     return HttpRequestService(
-        client=client, service_name=config.name, response_handler=parser_factory
+        client=client, service_name=config.name, response_handler=response_handler
     )
 
 
@@ -61,12 +62,12 @@ def get_digipos_command_service(
     http_service: HttpRequestService = Depends(get_digipos_http_service),
     auth_service: DigiposAuthService = Depends(get_digipos_auth_service),
     config: DigiposConfig = Depends(get_digipos_config),
-) -> DGCommandServices:
+):
     """Generate DGCommandServices (endpoint caller) siap pakai."""
     return DGCommandServices(http_service, auth_service, config)
 
 
-# Annotated
+# Annotated Style if needed
 DepDigiposSettings = Annotated[DigiposConfig, Depends(get_digipos_config)]
 DepDigiposApiClient = Annotated[
     AsyncClient, Depends(client_factory(lambda s: s.digipos))

@@ -132,7 +132,7 @@ class HttpResponseService:
         )
 
 
-class ResponseParserFactory:
+class ResponseHandlerFactory:
     """Factory buat DI, auto-handle json parse error & safe fallback."""
 
     def __init__(

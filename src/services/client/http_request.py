@@ -1,7 +1,7 @@
 import httpx
 from loguru import logger
 
-from services.client.http_response import ResponseParserFactory
+from services.client.http_response import ResponseHandlerFactory
 from src.custom.exceptions import (
     HTTPConnectionError,
     HttpResponseError,
@@ -15,7 +15,7 @@ class HttpRequestService:
     def __init__(
         self,
         client: httpx.AsyncClient,
-        response_handler: ResponseParserFactory,
+        response_handler: ResponseHandlerFactory,
         service_name: str | None = None,
     ):
         inferred_name = service_name or getattr(client.base_url, "host", "Upstream")
