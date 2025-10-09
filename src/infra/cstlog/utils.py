@@ -36,6 +36,7 @@ class MetricsCollector:
         # ...do something...
         exec_time = perf_counter() - start
         logger.bind(metric_name="custom_block", value=exec_time).log("METRIC", "Custom block timing")
+        for future use
     """
 
     def __init__(self) -> None:

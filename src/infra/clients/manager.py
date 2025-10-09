@@ -16,6 +16,13 @@ class HttpClientManager:
         self._factory = factory
         self.log = logger.bind(service="HttpClientManager")
 
+    def _register_client(self, name: str, client: AsyncClient) -> None:
+        if name in self._clients:
+            self.log.warning(f"Client '{name}' sudah terdaftar — dilewati.")
+            return
+        self._clients[name] = client
+        self.log.debug(f"Client '{name}' registered successfully.")
+
     async def setup_and_register_client(
         self, config: ClientBaseConfig, check_url: bool = False
     ) -> httpx.AsyncClient:
@@ -29,17 +36,10 @@ class HttpClientManager:
         client = self._factory.create_client(config)
 
         # 3. Register
-        self.register_client(config.name, client)
+        self._register_client(config.name, client)
 
         log.success(f"Client '{config.name}' initialized with base={config.base_url}")
         return client
-
-    def register_client(self, name: str, client: AsyncClient) -> None:
-        if name in self._clients:
-            self.log.warning(f"Client '{name}' sudah terdaftar — dilewati.")
-            return
-        self._clients[name] = client
-        self.log.debug(f"Client '{name}' registered successfully.")
 
     def get_client(self, name: str) -> AsyncClient:
         if name not in self._clients:
