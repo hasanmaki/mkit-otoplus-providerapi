@@ -21,7 +21,7 @@ from fastapi import Depends
 from httpx import AsyncClient
 
 from services.client.http_request import HttpRequestService
-from services.client.http_response import ResponseParserFactory
+from services.client.http_response import ResponseHandlerFactory
 from src.config.settings import AppSettings, DigiposConfig
 from src.deps.dep_factory import (
     client_factory,
@@ -42,11 +42,11 @@ def get_digipos_config(
 def get_digipos_http_service(
     client: AsyncClient = Depends(client_factory(lambda s: s.digipos)),
     config: DigiposConfig = Depends(get_digipos_config),
-    parser_factory: ResponseParserFactory = Depends(get_response_parser_factory),
+    parser_factory: ResponseHandlerFactory = Depends(get_response_parser_factory),
 ) -> HttpRequestService:
     """Generate HttpClientService khusus Digipos."""
     return HttpRequestService(
-        client=client, service_name=config.name, parser_factory=parser_factory
+        client=client, service_name=config.name, response_handler=parser_factory
     )
 
 

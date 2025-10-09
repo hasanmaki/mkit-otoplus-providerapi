@@ -47,6 +47,13 @@ class HTTPConnectionError(AppExceptionError):
     status_code: int = 503
 
 
+class HTTPUnsupportedMethodeError(AppExceptionError):
+    """Error Karena Methode Tersebut Tidak Allowed."""
+
+    default_message: str = "Methode Unnsupported"
+    status_code: int = 403
+
+
 # --- Authentication / Credential Errors ---
 class AuthenticationError(AppExceptionError):
     """Error otentikasi umum."""

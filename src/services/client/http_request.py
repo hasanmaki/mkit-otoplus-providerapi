@@ -2,7 +2,11 @@ import httpx
 from loguru import logger
 
 from services.client.http_response import ResponseParserFactory
-from src.custom.exceptions import HTTPConnectionError, HttpResponseError
+from src.custom.exceptions import (
+    HTTPConnectionError,
+    HttpResponseError,
+    HTTPUnsupportedMethodeError,
+)
 
 
 class HttpRequestService:
@@ -11,22 +15,23 @@ class HttpRequestService:
     def __init__(
         self,
         client: httpx.AsyncClient,
-        parser_factory: ResponseParserFactory,
+        response_handler: ResponseParserFactory,
         service_name: str | None = None,
     ):
-        # fallback name untuk log clarity
         inferred_name = service_name or getattr(client.base_url, "host", "Upstream")
         self.client = client
-        self.parser_factory = parser_factory
+        self.response_handler = response_handler
         self.log = logger.bind(service=inferred_name)
 
     async def _request(self, method: str, endpoint: str, **kwargs) -> httpx.Response:
         """Low level request (tanpa parsing)."""
         method = method.upper()
 
-        if method not in {"GET", "POST", "PUT", "PATCH", "DELETE"}:
-            raise ValueError(f"Invalid HTTP method: {method}")
-
+        if method not in {"GET"}:
+            raise HTTPUnsupportedMethodeError(
+                message="forbidden methode call",
+                context={"method": method, "endpoint": endpoint},
+            )
         try:
             self.log.debug(f"Request [{method}] -> {endpoint}")
             resp = await getattr(self.client, method.lower())(endpoint, **kwargs)
@@ -45,7 +50,7 @@ class HttpRequestService:
                 context={
                     "endpoint": endpoint,
                     "status_code": exc.response.status_code,
-                    "body": exc.response.text[:500],  # limit biar log gak flood
+                    "body": exc.response.text[:500],
                 },
                 cause=exc,
             ) from exc
@@ -56,4 +61,4 @@ class HttpRequestService:
     ):
         """High level call — otomatis parsing ke dict."""
         raw_response = await self._request(method, endpoint, **kwargs)
-        return self.parser_factory(raw_response, debugresponse)
+        return self.response_handler(raw_response, debugresponse)

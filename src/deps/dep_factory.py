@@ -3,7 +3,7 @@ from typing import Annotated
 
 
 from src.core.client.base_manager import HttpClientManager
-from src.services.client.http_response import ResponseParserFactory
+from src.services.client.http_response import ResponseHandlerFactory
 from fastapi import Depends, Request
 from httpx import AsyncClient
 
@@ -39,14 +39,14 @@ def client_factory(config_getter):
     return _dep
 
 
-def get_response_parser_factory() -> ResponseParserFactory:
+def get_response_parser_factory() -> ResponseHandlerFactory:
     """Dependency provider buat ResponseParserFactory."""
-    return ResponseParserFactory()
+    return ResponseHandlerFactory()
 
 
 # Annotated
 from typing import Annotated
 
 DepResponseParserFactory = Annotated[
-    ResponseParserFactory, Depends(get_response_parser_factory)
+    ResponseHandlerFactory, Depends(get_response_parser_factory)
 ]

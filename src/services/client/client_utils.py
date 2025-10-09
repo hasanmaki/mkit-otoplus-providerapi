@@ -3,7 +3,7 @@ from typing import Any
 import httpx
 from loguru import logger
 
-from services.client.http_response import ResponseMessage
+from services.client.http_response import ResponseType
 from src.custom.exceptions import HTTPConnectionError, HttpResponseError
 
 
@@ -51,21 +51,21 @@ def handle_response(response: httpx.Response, *, debug: bool = False) -> dict[st
             body = response.json()
             if isinstance(body, dict):
                 data = body
-                msg = ResponseMessage.DICT
+                msg = ResponseType.DICT
             elif isinstance(body, list):
                 data = {"items": body, "count": len(body)}
-                msg = ResponseMessage.LIST
+                msg = ResponseType.LIST
             else:
                 data = {"raw": body}
-                msg = ResponseMessage.PRIMITIVE
+                msg = ResponseType.PRIMITIVE
         except Exception:
             text = response.text.strip()
             if text:
                 data = {"raw": text}
-                msg = ResponseMessage.TEXT
+                msg = ResponseType.TEXT
             else:
                 data = {"raw": None}
-                msg = ResponseMessage.EMPTY
+                msg = ResponseType.EMPTY
 
         meta = {}
         if debug:
@@ -85,7 +85,7 @@ def handle_response(response: httpx.Response, *, debug: bool = False) -> dict[st
             "status_code": getattr(response, "status_code", 0),
             "url": getattr(response, "url", "unknown"),
             "meta": {},
-            "message": ResponseMessage.ERROR,
+            "message": ResponseType.ERROR,
             "data": {"raw": str(exc)},
         }
     return {
